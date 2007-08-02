@@ -83,7 +83,7 @@
 				<ExtraCommands>
 					<Add after="zip -j9 ..\..\..\devel\share\CodeBlocks\cbMakefileGen.zip manifest.xml" />
 					<Add after="zip -j9 cbMakefileGen.cbplugin ..\..\..\devel\share\CodeBlocks\cbMakefileGen.zip ..\..\..\devel\share\CodeBlocks\plugins\cbMakefileGen.dll" />
-					<Add after="C:\utility\7-Zip\7z.exe a cbMakefileGen.7z cbMakefileGen.cbplugin" />
+					<Add after="7z.exe a cbMakefileGen.7z cbMakefileGen.cbplugin" />
 					<Mode after="always" />
 				</ExtraCommands>
 			</Target>
