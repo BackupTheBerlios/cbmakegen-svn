@@ -11,7 +11,7 @@
 WX_DEFINE_OBJARRAY( cbMGArrayOfRules );
 WX_DEFINE_OBJARRAY( cbMGSortFilesArray ); // keep our own copy, to sort it by file weight (priority)
 
-static wxString sHeader = _(
+static wxString sHeader = _T(
                               "# A simple makefile generator by KiSoft, 2007. mailto: kisoft@rambler.ru"
                           );
 
@@ -340,7 +340,7 @@ bool cbMGMakefile::SaveAllRules( wxTextFile& pFile )
     for ( i = 0; i < num; i++ )
     {
         cbMGRule& lRule = m_Rules.Item( i );
-        pFile.AddLine( lRule.GetTarget() + _( ": " ) + lRule.GetPrerequisites() );
+        pFile.AddLine( lRule.GetTarget() + _T( ": " ) + lRule.GetPrerequisites() );
         for ( k = 0; k < lRule.GetCommands().GetCount(); k++ )
         {
             if ( m_IsSilence )

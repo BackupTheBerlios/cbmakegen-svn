@@ -59,12 +59,12 @@ bool cbMGVariable::SaveAllVars( wxTextFile& pFile )
 {
     unsigned long i;
 
-    pFile.AddLine(_("# Project Variables start"));
+    pFile.AddLine(_T("# Project Variables start"));
     for ( i = 0; i < m_VariableName.GetCount(); i++ )
     {
-        pFile.AddLine( m_VariableName[ i ] + _("=") + m_VariableValue[ i ] );
+        pFile.AddLine( m_VariableName[ i ] + _T("=") + m_VariableValue[ i ] );
     }
-    pFile.AddLine(_("# Project Variables end"));
+    pFile.AddLine(_T("# Project Variables end"));
     pFile.AddLine(wxEmptyString);
     return true;
 }

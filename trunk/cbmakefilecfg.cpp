@@ -29,7 +29,7 @@ cbmakefilecfg::cbmakefilecfg(wxWindow* parent,wxWindowID id)
     //(*Initialize(cbmakefilecfg)
     Create(parent,id,wxDefaultPosition,wxSize(572,82),wxTAB_TRAVERSAL,_T("wxPanel"));
     m_pStaticText1 = new wxStaticText(this,ID_STATICTEXT1,_("Filename :"),wxPoint(1,6),wxDefaultSize,0,_T("ID_STATICTEXT1"));
-    m_pTCFilename = new wxTextCtrl(this,ID_TEXTCTRL1,_("Makefile.gen"),wxPoint(62,3),wxSize(510,21),0,wxDefaultValidator,_T("ID_TEXTCTRL1"));
+    m_pTCFilename = new wxTextCtrl(this,ID_TEXTCTRL1,_T("Makefile.gen"),wxPoint(62,3),wxSize(510,21),0,wxDefaultValidator,_T("ID_TEXTCTRL1"));
     m_pCBOverwrite = new wxCheckBox(this,ID_CHECKBOX1,_("Overwrite if exists"),wxPoint(63,28),wxDefaultSize,0,wxDefaultValidator,_T("ID_CHECKBOX1"));
     m_pCBOverwrite->SetValue(false);
     m_pCBSilence = new wxCheckBox(this,ID_CHECKBOX2,_("Add \'@\' prefix for commands"),wxPoint(64,47),wxDefaultSize,0,wxDefaultValidator,_T("ID_CHECKBOX2"));
