@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<wxsmith>
+    <object class="wxPanel" name="cbmakefilecfg">
+        <size>572,82</size>
+        <object class="wxStaticText" name="ID_STATICTEXT1" variable="m_pStaticText1" member="yes">
+            <label>Filename :</label>
+            <pos>1,6</pos>
+        </object>
+        <object class="wxTextCtrl" name="ID_TEXTCTRL1" variable="m_pTCFilename" member="yes">
+            <value>Makefile.gen</value>
+            <pos>62,3</pos>
+            <size>510,21</size>
+        </object>
+        <object class="wxCheckBox" name="ID_CHECKBOX1" variable="m_pCBOverwrite" member="yes">
+            <label>Overwrite if exists</label>
+            <pos>63,28</pos>
+        </object>
+        <object class="wxCheckBox" name="ID_CHECKBOX2" variable="m_pCBSilence" member="yes">
+            <label>Add &apos;@&apos; prefix for commands</label>
+            <pos>64,47</pos>
+        </object>
+    </object>
+</wxsmith>

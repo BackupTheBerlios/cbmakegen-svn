@@ -1,0 +1,88 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2007-08-07 14:33+0400\n"
+"PO-Revision-Date: 2007-08-07 14:42+0300\n"
+"Last-Translator: Vladimir Kiselev <kisoft@rambler.ru>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: cbmakefilecfg.cpp:31
+msgid "Filename :"
+msgstr "Имя файла :"
+
+#: cbmakefilecfg.cpp:33
+msgid "Overwrite if exists"
+msgstr "Перезаписывать существующий"
+
+#: cbmakefilecfg.cpp:35
+msgid "Add '@' prefix for commands"
+msgstr "Добавлять префикс '@' для запуска команд"
+
+#: Makefile.cpp:89
+msgid "File "
+msgstr "Файл "
+
+#: Makefile.cpp:89
+msgid ""
+" is exists!\n"
+"Overwrite?"
+msgstr ""
+" уже существует!\n"
+"Перезаписать?"
+
+#: Makefile.cpp:90
+msgid "Warning"
+msgstr "Внимание"
+
+#: Makefile.cpp:104
+msgid ""
+"Can't found an active target!\n"
+"C::B MakefileGen could not complete the operation."
+msgstr ""
+"Невозможно найти активную цель!\n"
+"Формирование прервано."
+
+#: Makefile.cpp:106
+#: cbMakefileGen.cpp:122
+msgid "Error"
+msgstr "Ошибка"
+
+#: cbMakefileGen.cpp:66
+msgid "Makefile generator configure"
+msgstr "Конфигурация формирователя Makefile"
+
+#: cbMakefileGen.cpp:88
+msgid "Project"
+msgstr "Проект"
+
+#: cbMakefileGen.cpp:95
+msgid "Generate Makefile"
+msgstr "Сформировать Makefile"
+
+#: cbMakefileGen.cpp:120
+msgid ""
+"You need to open a project\n"
+"before using the plugin!\n"
+"C::B MakefileGen could not complete the operation."
+msgstr ""
+"Необходимо открыть проект\n"
+"до использования плагина!\n"
+"Формирование прервано."
+
+#: cbMakefileGen.cpp:134
+msgid "C::B MakefileGen save : "
+msgstr "C::B MakefileGen сохранил : "
+
+#: cbMakefileGen.cpp:136
+msgid "Info"
+msgstr "Информация"
+
