@@ -41,6 +41,30 @@ wxString cbMGVariable::GetVariable(const wxString& pVarName) const
     }
 }
 
+wxString cbMGVariable::GetVariable( unsigned long pIndex ) const
+{
+    if ( pIndex >= 0 )
+    {
+        return m_VariableValue[ pIndex ];
+    }
+    else
+    {
+        return wxEmptyString;
+    }
+}
+
+wxString cbMGVariable::GetVarName( unsigned long pIndex ) const
+{
+    if ( pIndex >= 0 )
+    {
+        return m_VariableName[ pIndex ];
+    }
+    else
+    {
+        return wxEmptyString;
+    }
+}
+
 long cbMGVariable::GetVariableIndex(const wxString& pVarName) const
 {
     unsigned long i;
@@ -84,5 +108,16 @@ void cbMGVariable::AppendValue(const wxString& pVarName,const wxString& pVarValu
     {
         AddVariable( pVarName, pVarValue );
     }
+}
+
+void cbMGVariable::Clear()
+{
+  m_VariableName.Clear();
+  m_VariableValue.Clear();
+}
+
+unsigned long cbMGVariable::Count() const
+{
+  return m_VariableName.Count();
 }
 

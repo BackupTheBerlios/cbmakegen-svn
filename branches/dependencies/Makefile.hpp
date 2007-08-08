@@ -17,6 +17,7 @@ class cbMGMakefile
 {
     cbMGArrayOfRules m_Rules;
     cbMGVariable m_Variables;
+    cbMGVariable m_Deps;
     wxChar       m_CommandPrefix;
     long         m_CommandPrefixRepeatCnt;
     cbProject    *m_pProj;
@@ -47,6 +48,8 @@ public:
 protected:
     bool SaveAllRules( wxTextFile& pFile );
     cbMGSortFilesArray GetProjectFilesSortedByWeight(ProjectBuildTarget* ppTarget, bool pCompile, bool pLink);
+    bool getDependencies(ProjectBuildTarget *p_pTarget,Compiler* p_pCompiler);
+    bool reLoadDependecies(const wxString &p_DepsFileName,ProjectBuildTarget *p_pTarget,Compiler* p_pCompiler);
 private:
 };
 

@@ -76,6 +76,94 @@ cbMGSortFilesArray cbMGMakefile::GetProjectFilesSortedByWeight( ProjectBuildTarg
     return files;
 }
 
+bool cbMGMakefile::reLoadDependecies(const wxString &p_DepsFileName,ProjectBuildTarget *p_pTarget,Compiler* p_pCompiler)
+{
+    m_Deps.Clear();
+    if ( !wxFileExists( p_DepsFileName ) ) return true;
+
+    wxString l_Buf;
+    wxString l_VarName;
+    wxTextFile l_DepFile;
+    bool IsSkipThisFile = true;
+    if (l_DepFile.Open( p_DepsFileName, wxConvFile ))
+    {
+        for ( unsigned long i = 0; i < l_DepFile.GetLineCount(); i++ )
+        {
+            l_Buf = l_DepFile[i];
+            l_Buf.Trim(true);
+            // Wrong! Don't uncomment it! Being deleted '\t' symbol! l_Buf.Trim(false);
+            if ( l_Buf.IsEmpty() )
+            {
+                l_VarName.Clear();
+                IsSkipThisFile = true;
+                continue;
+            }
+            if ( _T('#') == l_Buf[0] ) continue;
+            if ( _T('\t') == l_Buf[0] )
+            {
+                if ( !IsSkipThisFile )
+                {
+                    if ( _T('"') == l_Buf[1] )
+                    {
+                        wxString l_TmpName = l_Buf.AfterFirst( _T('\t') );
+                        if (!l_TmpName.IsEmpty() && l_TmpName.GetChar(0) == _T('"') && l_TmpName.Last() == _T('"'))
+                            l_TmpName = l_TmpName.Mid(1, l_TmpName.Length() - 2);
+                        QuoteStringIfNeeded( l_TmpName );
+                        m_Deps.AppendValue( l_VarName, l_TmpName );
+                    }
+                }
+            }
+            else
+            {
+                l_VarName = l_Buf.AfterFirst(_T(' '));
+                bool IsSource = l_VarName.Matches( _T("source:*") );
+                if ( IsSource )
+                {
+                    l_VarName = l_VarName.AfterFirst( _T(':') );
+                }
+                /*
+                 * You would MUST found source file and get his filename from project
+                 * !!! .depend file content lowcase filenames
+                 */
+                wxFileName l_DepFileName = l_VarName;
+                ProjectFile *pf = m_pProj->GetFileByFilename( l_DepFileName.GetFullPath(), l_DepFileName.IsRelative(), false );
+                if ( pf )
+                {
+                    const pfDetails& pfd = pf->GetFileDetails( p_pTarget );
+                    if ( p_pCompiler->GetSwitches().UseFullSourcePaths )
+                    {
+                        l_VarName = UnixFilename( pfd.source_file_absolute_native );
+                    }
+                    else
+                    {
+                        l_VarName = pfd.source_file;
+                    }
+                    QuoteStringIfNeeded( l_VarName );
+                    IsSkipThisFile = false;
+                }
+                else
+                {
+                    IsSkipThisFile = true;
+                }
+            }
+        }
+    }
+    /* FIXME (kisoftcb#1#): Next code for debug only!
+    wxTextFile l_DebFile;
+    l_DebFile.Create( _T("D:/DepsFile.log") );
+    m_Deps.SaveAllVars( l_DebFile );
+    l_DebFile.Write();
+    l_DebFile.Close(); */
+}
+
+bool cbMGMakefile::getDependencies(ProjectBuildTarget *p_pTarget,Compiler* p_pCompiler)
+{
+    wxFileName l_DepsFilename(m_pProj->GetFilename());
+    l_DepsFilename.SetExt(_T("depend"));
+    /* l_DepsFilename content filename for <project>.depend */
+    return reLoadDependecies(l_DepsFilename.GetFullPath(),p_pTarget,p_pCompiler);
+}
+
 bool cbMGMakefile::SaveMakefile()
 {
     bool l_Ret = false;
@@ -110,6 +198,9 @@ bool cbMGMakefile::SaveMakefile()
 
     const wxString& l_CompilerId = l_pTarget->GetCompilerID();
     Compiler* l_pCompiler = CompilerFactory::GetCompiler( l_CompilerId );
+
+    getDependencies( l_pTarget, l_pCompiler );
+
     m_Variables.AddVariable(_T("CPP"),l_pCompiler->GetPrograms().CPP);
     m_Variables.AddVariable(_T("CC"),l_pCompiler->GetPrograms().C);
     m_Variables.AddVariable(_T("LD"),l_pCompiler->GetPrograms().LD);
@@ -227,12 +318,12 @@ bool cbMGMakefile::SaveMakefile()
         l_Rule.AddCommand( _T( "echo Building " ) + kind_of_output + _T( " " ) + l_OutFileName.GetFullPath() );
         wxString l_LinkerCmd = l_pCompiler->GetCommand( ct );
         l_pCompiler->GenerateCommandLine( l_LinkerCmd,
-                                        l_pTarget,
-                                        NULL,
-                                        l_OutFileName.GetFullPath(),
-                                        oobjs,
-                                        wxEmptyString,
-                                        wxEmptyString );
+                                          l_pTarget,
+                                          NULL,
+                                          l_OutFileName.GetFullPath(),
+                                          oobjs,
+                                          wxEmptyString,
+                                          wxEmptyString );
         l_Rule.AddCommand( l_LinkerCmd );
     }
     m_Rules.Add( l_Rule );
@@ -283,26 +374,28 @@ bool cbMGMakefile::SaveMakefile()
             }
             QuoteStringIfNeeded( l_SourceFile );
             l_pCompiler->GenerateCommandLine( l_CompilerCmd,
-                                            l_pTarget,
-                                            pf,
-                                            l_SourceFile,
-                                            l_Object,
-                                            pfd.object_file_flat,
-                                            pfd.dep_file );
+                                              l_pTarget,
+                                              pf,
+                                              l_SourceFile,
+                                              l_Object,
+                                              pfd.object_file_flat,
+                                              pfd.dep_file );
             m_Variables.AppendValue( _T( "OBJS" ), l_Object );
             l_Rule.SetTarget( l_Object );
-            // TODO (kisoft#1#): we need for do add a dependency files too
-            /*
-            wxFileName l_DepFileName = l_Object;
-            l_DepFileName.SetExt( _T("d") );
-            l_Rule.SetPrerequisites( l_SourceFile + _T(" ") + l_DepFileName.GetFullPath() );
-            */
             l_Rule.SetPrerequisites( l_SourceFile );
             l_Rule.AddCommand( _T( "echo Compiling: " ) + l_SourceFile );
             l_Rule.AddCommand( l_CompilerCmd );
             m_Rules.Add( l_Rule );
         }
     }
+    for ( unsigned long i=0; i < m_Deps.Count(); i++ )
+    {
+        l_Rule.Clear();
+        l_Rule.SetTarget( m_Deps.GetVarName( i ) );
+        l_Rule.SetPrerequisites( m_Deps.GetVariable( i ) );
+        m_Rules.Add( l_Rule );
+    }
+
     l_Rule.Clear();
     l_Rule.SetTarget( cmdphony );
     l_Rule.SetPrerequisites( cmdclean );
