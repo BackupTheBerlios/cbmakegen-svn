@@ -79,7 +79,7 @@ cbMGSortFilesArray cbMGMakefile::GetProjectFilesSortedByWeight( ProjectBuildTarg
 bool cbMGMakefile::reLoadDependecies(const wxString &p_DepsFileName,ProjectBuildTarget *p_pTarget,Compiler* p_pCompiler)
 {
     m_Deps.Clear();
-    if ( !wxFileExists( p_DepsFileName ) ) return true;
+    if ( !wxFileExists( p_DepsFileName ) ) return false;
 
     wxString l_Buf;
     wxString l_VarName;
@@ -160,6 +160,13 @@ bool cbMGMakefile::getDependencies(ProjectBuildTarget *p_pTarget,Compiler* p_pCo
 {
     wxFileName l_DepsFilename(m_pProj->GetFilename());
     l_DepsFilename.SetExt(_T("depend"));
+    if ( !wxFileExists( l_DepsFilename.GetFullPath() ) )
+    {
+        wxString lMsg = _( "Dependencies file " ) + l_DepsFilename.GetFullPath() + _(" is not exists!\n"
+                        "Dependencies must being created before use MakefileGen plugin.\n"
+                        "Continue anyway?" );
+        return (wxID_YES == cbMessageBox(lMsg, _("Warning"), wxICON_EXCLAMATION | wxYES_NO, (wxWindow *)Manager::Get()->GetAppWindow()));
+    }
     /* l_DepsFilename content filename for <project>.depend */
     return reLoadDependecies(l_DepsFilename.GetFullPath(),p_pTarget,p_pCompiler);
 }
@@ -199,7 +206,7 @@ bool cbMGMakefile::SaveMakefile()
     const wxString& l_CompilerId = l_pTarget->GetCompilerID();
     Compiler* l_pCompiler = CompilerFactory::GetCompiler( l_CompilerId );
 
-    getDependencies( l_pTarget, l_pCompiler );
+    if ( !getDependencies( l_pTarget, l_pCompiler ) ) return false;
 
     m_Variables.AddVariable(_T("CPP"),l_pCompiler->GetPrograms().CPP);
     m_Variables.AddVariable(_T("CC"),l_pCompiler->GetPrograms().C);

@@ -135,6 +135,11 @@ void cbMakefileGen::OnExecute(wxCommandEvent &event)
         msg += m_Filename;
         cbMessageBox(msg, _("Info"), wxICON_INFORMATION | wxOK, Manager::Get()->GetAppWindow());
     }
+    else
+    {
+        msg = _("C::B MakefileGen found errors, saves aborted.");
+        cbMessageBox(msg, _("Error"), wxICON_EXCLAMATION | wxOK, Manager::Get()->GetAppWindow());
+    }
 }
 
 cbConfigurationPanel* cbMakefileGen::GetConfigurationPanel(wxWindow* parent)
