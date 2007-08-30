@@ -8,7 +8,7 @@
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="default">
-				<Option output="..\..\..\devel\share\CodeBlocks\plugins\cbMakefileGen.dll" prefix_auto="1" extension_auto="1" />
+				<Option output="..\..\..\devel\share\CodeBlocks\plugins\cbMakefileGen" prefix_auto="1" extension_auto="1" />
 				<Option object_output="..\..\..\.objs\plugins\contrib\cbmakegen" />
 				<Option deps_output="..\..\..\.deps\plugins\contrib\cbmakegen" />
 				<Option type="3" />
@@ -47,7 +47,7 @@
 				</ExtraCommands>
 			</Target>
 			<Target title="Plugin">
-				<Option output="..\..\..\devel\share\CodeBlocks\plugins\cbMakefileGen.dll" prefix_auto="1" extension_auto="1" />
+				<Option output="..\..\..\devel\share\CodeBlocks\plugins\cbMakefileGen" prefix_auto="1" extension_auto="1" />
 				<Option object_output="..\..\..\.objs\plugins\contrib\cbmakegen" />
 				<Option deps_output="..\..\..\.deps\plugins\contrib\cbmakegen" />
 				<Option type="3" />
@@ -109,6 +109,9 @@
 		<Unit filename="cbmakefilecfg.h" />
 		<Unit filename="manifest.xml" />
 		<Unit filename="wxsmith\cbmakefilecfg.wxs" />
+		<Unit filename="version.h">
+			<Option target="Plugin" />
+		</Unit>
 		<Extensions>
 			<code_completion />
 			<envvars />
@@ -118,6 +121,7 @@
 					<wxPanel wxs="wxsmith/cbmakefilecfg.wxs" src="cbmakefilecfg.cpp" hdr="cbmakefilecfg.h" name="cbmakefilecfg" language="CPP" />
 				</resources>
 			</wxsmith>
+			<debugger />
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>
