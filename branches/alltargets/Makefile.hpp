@@ -17,6 +17,7 @@ class cbMGMakefile
 {
     cbMGArrayOfRules m_Rules;
     cbMGVariable m_Variables;
+    wxString     m_Objs;
     cbMGVariable m_Deps;
     wxChar       m_CommandPrefix;
     long         m_CommandPrefixRepeatCnt;
@@ -26,6 +27,7 @@ class cbMGMakefile
     bool         m_IsSilence;
     bool         m_Overwrite;
     bool         m_AllTargets;
+    bool         m_VariablesIsSaved;
 public:
     cbMGMakefile(cbProject* ppProj, const wxString& pFileName,bool pOverwrite,bool pSilence,bool pAllTargets);
     virtual ~cbMGMakefile();
@@ -51,6 +53,7 @@ protected:
     cbMGSortFilesArray GetProjectFilesSortedByWeight(ProjectBuildTarget* ppTarget, bool pCompile, bool pLink);
     bool getDependencies(ProjectBuildTarget *p_pTarget,Compiler* p_pCompiler);
     bool reLoadDependecies(const wxString &p_DepsFileName,ProjectBuildTarget *p_pTarget,Compiler* p_pCompiler);
+    bool formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextFile &p_File );
 private:
 };
 

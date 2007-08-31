@@ -18,8 +18,8 @@ static wxString sHeader = _T(
 const wxString cmdbefore = _T( "commandsbeforebuild" );
 const wxString cmdafter  = _T( "commandsafterbuild" );
 const wxString cmdphony  = _T( ".PHONY" );
-const wxString objs      = _T("$(OBJS)");
-const wxString oobjs     = _T("$$(OBJS)");
+// const wxString objs      = _T("$(OBJS)");
+//const wxString oobjs     = _T("$$(OBJS)");
 const wxString cmdclean  = _T("clean");
 
 cbMGMakefile::cbMGMakefile( cbProject* ppProject, const wxString& pFileName, bool pOverwrite,bool pSilence,bool pAllTargets)
@@ -31,6 +31,8 @@ cbMGMakefile::cbMGMakefile( cbProject* ppProject, const wxString& pFileName, boo
         , m_IsSilence( pSilence )
         , m_Overwrite( pOverwrite )
         , m_AllTargets( pAllTargets )
+        , m_VariablesIsSaved( false )
+        , m_Objs()
 {
     //ctor
     m_Path = m_pProj->GetBasePath();
@@ -172,30 +174,11 @@ bool cbMGMakefile::getDependencies(ProjectBuildTarget *p_pTarget,Compiler* p_pCo
     return reLoadDependecies(l_DepsFilename.GetFullPath(),p_pTarget,p_pCompiler);
 }
 
-bool cbMGMakefile::SaveMakefile()
+bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextFile &p_File )
 {
     bool l_Ret = false;
-    wxString l_FullFilename = m_Path + m_Filename;
-
-    if ( m_Overwrite && wxFileExists( l_FullFilename ) ) wxRemoveFile( l_FullFilename );
-
-    wxTextFile l_File;
-    if ( !l_File.Create( l_FullFilename ) )
-    {
-        wxString lMsg = _( "File " ) + l_FullFilename + _(" is exists!\nOverwrite?" );
-        if (wxID_YES == cbMessageBox(lMsg, _("Warning"), wxICON_EXCLAMATION | wxYES_NO, (wxWindow *)Manager::Get()->GetAppWindow()))
-        {
-            wxRemoveFile( l_FullFilename );
-        }
-        else
-        {
-            return l_Ret;
-        }
-    }
-    // for active target only!
-    wxString l_ActiveTargetName = m_pProj->GetActiveBuildTarget();
-    ProjectBuildTarget* l_pTarget = m_pProj->GetBuildTarget( l_ActiveTargetName );
-    if ( !l_pTarget )
+//    ProjectBuildTarget* l_pTarget = m_pProj->GetBuildTarget( p_TargetName );
+    if ( !p_BuildTarget )
     {
         wxString l_Msg = _( "Can't found an active target!\n"
                             "C::B MakefileGen could not complete the operation." );
@@ -204,41 +187,53 @@ bool cbMGMakefile::SaveMakefile()
         return l_Ret;
     }
 
-    const wxString& l_CompilerId = l_pTarget->GetCompilerID();
+    wxString l_TargetName = p_BuildTarget->GetTitle();
+
+    wxString l_ObjsName = _T("OBJS_") + l_TargetName.Upper();
+    wxString l_CmdBefore = cmdbefore + _T('_') + l_TargetName;
+    wxString l_CmdAfter = cmdafter + _T('_') + l_TargetName;
+    wxString l_CmdClean = cmdclean + _T('_') + l_TargetName;
+
+    m_Rules.Clear();
+
+    const wxString& l_CompilerId = p_BuildTarget->GetCompilerID();
     Compiler* l_pCompiler = CompilerFactory::GetCompiler( l_CompilerId );
 
-    if ( !getDependencies( l_pTarget, l_pCompiler ) ) return false;
+    if ( !getDependencies( p_BuildTarget, l_pCompiler ) ) return false;
 
-    m_Variables.AddVariable(_T("CPP"),l_pCompiler->GetPrograms().CPP);
-    m_Variables.AddVariable(_T("CC"),l_pCompiler->GetPrograms().C);
-    m_Variables.AddVariable(_T("LD"),l_pCompiler->GetPrograms().LD);
-    m_Variables.AddVariable(_T("LIB"),l_pCompiler->GetPrograms().LIB);
-    m_Variables.AddVariable(_T("WINDRES"),l_pCompiler->GetPrograms().WINDRES);
+    if( !m_VariablesIsSaved )
+    {
+      m_Variables.AddVariable(_T("CPP"),l_pCompiler->GetPrograms().CPP);
+      m_Variables.AddVariable(_T("CC"),l_pCompiler->GetPrograms().C);
+      m_Variables.AddVariable(_T("LD"),l_pCompiler->GetPrograms().LD);
+      m_Variables.AddVariable(_T("LIB"),l_pCompiler->GetPrograms().LIB);
+      m_Variables.AddVariable(_T("WINDRES"),l_pCompiler->GetPrograms().WINDRES);
+    }
 
-    const wxArrayString& l_CommandsBeforeBuild = l_pTarget->GetCommandsBeforeBuild();
-    const wxArrayString& l_CommandsAfterBuild = l_pTarget->GetCommandsAfterBuild();
+    const wxArrayString& l_CommandsBeforeBuild = p_BuildTarget->GetCommandsBeforeBuild();
+    const wxArrayString& l_CommandsAfterBuild = p_BuildTarget->GetCommandsAfterBuild();
 
-    wxString l_TargetFileName = l_pTarget->GetOutputFilename();
-    Manager::Get()->GetMacrosManager()->ReplaceMacros(l_TargetFileName, l_pTarget);
+    wxString l_TargetFileName = p_BuildTarget->GetOutputFilename();
+    Manager::Get()->GetMacrosManager()->ReplaceMacros(l_TargetFileName, p_BuildTarget);
     wxFileName l_OutFileName = UnixFilename(l_TargetFileName);
     cbMGRule l_Rule;
-    if ( 0 == l_ActiveTargetName.CmpNoCase( _T( "default" ) ) )
+    if ( 0 == l_TargetName.CmpNoCase( _T( "default" ) ) )
     {
         l_Rule.SetTarget( _T( "all" ) );
     }
     else
     {
-        l_Rule.SetTarget( l_ActiveTargetName );
+        l_Rule.SetTarget( l_TargetName );
     }
     wxString l_Pre;
     if ( l_CommandsBeforeBuild.GetCount() > 0 )
     {
-        l_Pre = cmdbefore + _T(" ");
+        l_Pre = l_CmdBefore;
     }
     l_Pre += l_OutFileName.GetFullPath();
     if ( l_CommandsAfterBuild.GetCount() > 0 )
     {
-        l_Pre += _T(" ") + cmdafter;
+        l_Pre += _T(" ") + l_CmdAfter;
     }
 
     l_Rule.SetPrerequisites( l_Pre );
@@ -248,10 +243,10 @@ bool cbMGMakefile::SaveMakefile()
     {
         l_Rule.Clear();
         l_Rule.SetTarget( cmdphony );
-        l_Rule.SetPrerequisites( cmdbefore );
+        l_Rule.SetPrerequisites( l_CmdBefore );
         m_Rules.Add( l_Rule );
         l_Rule.Clear();
-        l_Rule.SetTarget( cmdbefore );
+        l_Rule.SetTarget( l_CmdBefore );
         for ( unsigned long idx = 0; idx < l_CommandsBeforeBuild.GetCount(); idx ++ )
         {
             l_Rule.AddCommand( l_CommandsBeforeBuild[ idx ] );
@@ -262,10 +257,10 @@ bool cbMGMakefile::SaveMakefile()
     {
         l_Rule.Clear();
         l_Rule.SetTarget( cmdphony );
-        l_Rule.SetPrerequisites( cmdafter );
+        l_Rule.SetPrerequisites( l_CmdAfter );
         m_Rules.Add( l_Rule );
         l_Rule.Clear();
-        l_Rule.SetTarget( cmdafter );
+        l_Rule.SetTarget( l_CmdAfter );
         for ( unsigned long idx = 0; idx < l_CommandsAfterBuild.GetCount(); idx ++ )
         {
             l_Rule.AddCommand( l_CommandsAfterBuild[ idx ] );
@@ -274,11 +269,11 @@ bool cbMGMakefile::SaveMakefile()
     }
     l_Rule.Clear();
     l_Rule.SetTarget( l_OutFileName.GetFullPath() );
-    l_Rule.SetPrerequisites( objs );
+    l_Rule.SetPrerequisites( _T("$(") + l_ObjsName + _T(")") );
 
     wxString kind_of_output = _T( "unknown" );
     CommandType ct = ctInvalid; // get rid of compiler warning
-    switch ( l_pTarget->GetTargetType() )
+    switch ( p_BuildTarget->GetTargetType() )
     {
     case ttConsoleOnly:
         ct = ctLinkConsoleExeCmd;
@@ -326,10 +321,10 @@ bool cbMGMakefile::SaveMakefile()
         l_Rule.AddCommand( _T( "echo Building " ) + kind_of_output + _T( " " ) + l_OutFileName.GetFullPath() );
         wxString l_LinkerCmd = l_pCompiler->GetCommand( ct );
         l_pCompiler->GenerateCommandLine( l_LinkerCmd,
-                                          l_pTarget,
+                                          p_BuildTarget,
                                           NULL,
                                           l_OutFileName.GetFullPath(),
-                                          oobjs,
+                                          _T("$$(") + l_TargetName + _T(")"),
                                           wxEmptyString,
                                           wxEmptyString );
         l_Rule.AddCommand( l_LinkerCmd );
@@ -347,13 +342,13 @@ bool cbMGMakefile::SaveMakefile()
     wxString FlatObject;
     wxString deps;
 
-    cbMGSortFilesArray files = GetProjectFilesSortedByWeight(l_pTarget,true,false);
+    cbMGSortFilesArray files = GetProjectFilesSortedByWeight(p_BuildTarget,true,false);
     unsigned long lnb_files = files.GetCount();
     for ( ii = 0; ii < lnb_files; ii++ )
     {
         l_Rule.Clear();
         ProjectFile* pf = files[ ii ];
-        const pfDetails& pfd = pf->GetFileDetails( l_pTarget );
+        const pfDetails& pfd = pf->GetFileDetails( p_BuildTarget );
         wxString l_Object = ( l_pCompiler->GetSwitches().UseFlatObjects )?pfd.object_file_flat:pfd.object_file;
         wxString l_CompilerCmd;
         // lookup file's type
@@ -382,13 +377,17 @@ bool cbMGMakefile::SaveMakefile()
             }
             QuoteStringIfNeeded( l_SourceFile );
             l_pCompiler->GenerateCommandLine( l_CompilerCmd,
-                                              l_pTarget,
+                                              p_BuildTarget,
                                               pf,
                                               l_SourceFile,
                                               l_Object,
                                               pfd.object_file_flat,
                                               pfd.dep_file );
-            m_Variables.AppendValue( _T( "OBJS" ), l_Object );
+            if( m_Objs.size() )
+            {
+                m_Objs += _T(' ');
+            }
+            m_Objs += l_Object;
             l_Rule.SetTarget( l_Object );
             l_Rule.SetPrerequisites( l_SourceFile );
             l_Rule.AddCommand( _T( "echo Compiling: " ) + l_SourceFile );
@@ -406,27 +405,88 @@ bool cbMGMakefile::SaveMakefile()
 
     l_Rule.Clear();
     l_Rule.SetTarget( cmdphony );
-    l_Rule.SetPrerequisites( cmdclean );
+    l_Rule.SetPrerequisites( l_CmdClean );
     m_Rules.Add( l_Rule );
     l_Rule.Clear();
-    l_Rule.SetTarget( cmdclean );
-    l_Rule.AddCommand( _T( "echo Delete $(OBJS) " ) + l_OutFileName.GetFullPath() );
+    l_Rule.SetTarget( l_CmdClean );
+    l_Rule.AddCommand( _T( "echo Delete $(" ) + l_ObjsName + _T( ") " ) + l_OutFileName.GetFullPath() );
 #ifdef __WXMSW__
-    l_Rule.AddCommand( _T( "del /f $(OBJS) " ) + l_OutFileName.GetFullPath() );
+    l_Rule.AddCommand( _T( "-del /f $(" ) + l_ObjsName + _T( ") " ) + l_OutFileName.GetFullPath() );
 #else
-    l_Rule.AddCommand( _T( "rm -f $(OBJS) " ) + l_OutFileName.GetFullPath() );
+    l_Rule.AddCommand( _T( "-rm -f $(" ) + l_ObjsName + _T( ") " ) + l_OutFileName.GetFullPath() );
 #endif
     m_Rules.Add( l_Rule );
 
-    // save header
+    if( !m_VariablesIsSaved )
+    {
+      m_Variables.SaveAllVars( p_File );
+      m_VariablesIsSaved = true;
+    }
+    p_File.AddLine( _T("# Target: ") + l_TargetName );
+    p_File.AddLine( wxEmptyString );
+    p_File.AddLine( l_ObjsName + _T("=") + m_Objs );
+    p_File.AddLine( wxEmptyString );
+    SaveAllRules( p_File );
+    p_File.AddLine( wxEmptyString );
+    p_File.AddLine( wxEmptyString );
+    l_Ret = true;
+    return l_Ret;
+}
+
+bool cbMGMakefile::SaveMakefile()
+{
+    bool l_Ret = false;
+    wxString l_FullFilename = m_Path + m_Filename;
+
+    if ( m_Overwrite && wxFileExists( l_FullFilename ) ) wxRemoveFile( l_FullFilename );
+
+    wxTextFile l_File;
+    if ( !l_File.Create( l_FullFilename ) )
+    {
+        wxString lMsg = _( "File " ) + l_FullFilename + _(" is exists!\nOverwrite?" );
+        if (wxID_YES == cbMessageBox(lMsg, _("Warning"), wxICON_EXCLAMATION | wxYES_NO, (wxWindow *)Manager::Get()->GetAppWindow()))
+        {
+            wxRemoveFile( l_FullFilename );
+        }
+        else
+        {
+            return l_Ret;
+        }
+    }
+
     l_File.AddLine( sHeader );
     l_File.AddLine( wxEmptyString );
-    m_Variables.SaveAllVars( l_File );
-    SaveAllRules( l_File );
 
-    l_File.Write();
+    long l_TargetsCount = m_pProj->GetBuildTargetsCount();
+    if( l_TargetsCount < 1 )
+    {
+        wxString l_Msg = _( "Can't found targets!\n"
+                            "C::B MakefileGen could not complete the operation." );
+        cbMessageBox( l_Msg, _( "Error" ), wxICON_ERROR | wxOK, (wxWindow *)Manager::Get()->GetAppWindow() );
+        Manager::Get()->GetMessageManager()->DebugLog( l_Msg );
+        return l_Ret;
+    }
+
+    for( long i = 0; i < l_TargetsCount; i++ )
+    {
+      ProjectBuildTarget *l_BuildTarget = m_pProj->GetBuildTarget( i );
+
+      if( l_BuildTarget )
+      {
+          l_Ret = formFileForTarget( l_BuildTarget, l_File );
+
+          if( l_Ret )
+          {
+              l_File.Write();
+          }
+          else
+          {
+              break;
+          }
+      }
+    }
     l_File.Close();
-    l_Ret = true;
+//    l_Ret = true;
     return l_Ret;
 }
 
@@ -437,6 +497,9 @@ bool cbMGMakefile::SaveAllRules( wxTextFile& pFile )
     size_t num = m_Rules.GetCount();
     unsigned long i;
     unsigned long k;
+    bool l_Ignore = false;
+    wxString l_CommandPrefix = GetCommandPrefix();
+    wxString l_Prefix;
 
     for ( i = 0; i < num; i++ )
     {
@@ -444,13 +507,20 @@ bool cbMGMakefile::SaveAllRules( wxTextFile& pFile )
         pFile.AddLine( lRule.GetTarget() + _T( ": " ) + lRule.GetPrerequisites() );
         for ( k = 0; k < lRule.GetCommands().GetCount(); k++ )
         {
+            l_Prefix = l_CommandPrefix;
+            wxString l_Cmd = lRule.GetCommands()[ k ];
+            if( _T('-') == l_Cmd[ 0 ] )
+            {
+              l_Cmd = l_Cmd.SubString( 1, l_Cmd.size() );
+              l_Prefix += _T('-');
+            }
             if ( m_IsSilence )
             {
-                pFile.AddLine( GetCommandPrefix() + _T( "@" ) + lRule.GetCommands()[ k ] );
+                pFile.AddLine( l_Prefix + _T( "@" ) + l_Cmd );
             }
             else
             {
-                pFile.AddLine( GetCommandPrefix() + lRule.GetCommands()[ k ] );
+                pFile.AddLine( l_Prefix + l_Cmd );
             }
         }
         pFile.AddLine( wxEmptyString );

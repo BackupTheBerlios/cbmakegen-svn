@@ -108,10 +108,10 @@
 		<Unit filename="cbmakefilecfg.cpp" />
 		<Unit filename="cbmakefilecfg.h" />
 		<Unit filename="manifest.xml" />
-		<Unit filename="wxsmith\cbmakefilecfg.wxs" />
 		<Unit filename="version.h">
 			<Option target="Plugin" />
 		</Unit>
+		<Unit filename="wxsmith\cbmakefilecfg.wxs" />
 		<Extensions>
 			<code_completion />
 			<envvars />
