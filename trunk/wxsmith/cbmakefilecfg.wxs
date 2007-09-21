@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <wxsmith>
 	<object class="wxPanel" name="cbmakefilecfg">
-		<size>572,82</size>
+		<size>584,81</size>
 		<object class="wxStaticText" name="ID_STATICTEXT1" variable="m_pStaticText1" member="yes">
 			<label>Filename :</label>
 			<pos>4,6</pos>

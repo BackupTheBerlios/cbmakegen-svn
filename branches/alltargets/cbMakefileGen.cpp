@@ -133,7 +133,9 @@ void cbMakefileGen::OnExecute(wxCommandEvent &event)
     if ( lMakefile.SaveMakefile() )
     {
         msg = _("C::B MakefileGen save : ");
-        msg += m_Filename;
+        msg += m_Filename; msg += _T("\n");
+        msg += _("Targets: ");
+        msg += lMakefile.GetProceedTargets();
         cbMessageBox(msg, _("Info"), wxICON_INFORMATION | wxOK, Manager::Get()->GetAppWindow());
     }
     else

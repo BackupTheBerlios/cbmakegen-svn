@@ -28,6 +28,8 @@ class cbMGMakefile
     bool         m_Overwrite;
     bool         m_AllTargets;
     bool         m_VariablesIsSaved;
+    wxString     m_ProceedTargets;
+    bool         m_DependenciesIsNotExistsIsNoProblem;
 public:
     cbMGMakefile(cbProject* ppProj, const wxString& pFileName,bool pOverwrite,bool pSilence,bool pAllTargets);
     virtual ~cbMGMakefile();
@@ -47,6 +49,10 @@ public:
     void SetIsSilence( bool pIsSilence )
     {
         m_IsSilence = pIsSilence;
+    }
+    wxString GetProceedTargets() const
+    {
+        return m_ProceedTargets;
     }
 protected:
     bool SaveAllRules( wxTextFile& pFile );

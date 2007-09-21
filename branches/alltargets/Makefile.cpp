@@ -18,8 +18,6 @@ static wxString sHeader = _T(
 const wxString cmdbefore = _T( "commandsbeforebuild" );
 const wxString cmdafter  = _T( "commandsafterbuild" );
 const wxString cmdphony  = _T( ".PHONY" );
-// const wxString objs      = _T("$(OBJS)");
-//const wxString oobjs     = _T("$$(OBJS)");
 const wxString cmdclean  = _T("clean");
 
 cbMGMakefile::cbMGMakefile( cbProject* ppProject, const wxString& pFileName, bool pOverwrite,bool pSilence,bool pAllTargets)
@@ -33,6 +31,8 @@ cbMGMakefile::cbMGMakefile( cbProject* ppProject, const wxString& pFileName, boo
         , m_AllTargets( pAllTargets )
         , m_VariablesIsSaved( false )
         , m_Objs()
+        , m_ProceedTargets( _T("") )
+        , m_DependenciesIsNotExistsIsNoProblem( false )
 {
     //ctor
     m_Path = m_pProj->GetBasePath();
@@ -161,6 +161,9 @@ bool cbMGMakefile::reLoadDependecies(const wxString &p_DepsFileName,ProjectBuild
 
 bool cbMGMakefile::getDependencies(ProjectBuildTarget *p_pTarget,Compiler* p_pCompiler)
 {
+    /* if Yes, dependenses is not exists, no work required */
+    if ( m_DependenciesIsNotExistsIsNoProblem ) return true;
+
     wxFileName l_DepsFilename(m_pProj->GetFilename());
     l_DepsFilename.SetExt(_T("depend"));
     if ( !wxFileExists( l_DepsFilename.GetFullPath() ) )
@@ -168,7 +171,16 @@ bool cbMGMakefile::getDependencies(ProjectBuildTarget *p_pTarget,Compiler* p_pCo
         wxString lMsg = _( "Dependencies file " ) + l_DepsFilename.GetFullPath() + _(" is not exists!\n"
                         "Dependencies must being created before use MakefileGen plugin.\n"
                         "Continue anyway?" );
-        return (wxID_YES == cbMessageBox(lMsg, _("Warning"), wxICON_EXCLAMATION | wxYES_NO, (wxWindow *)Manager::Get()->GetAppWindow()));
+        if (wxID_YES == cbMessageBox(lMsg, _("Warning"), wxICON_EXCLAMATION | wxYES_NO, (wxWindow *)Manager::Get()->GetAppWindow()))
+        {
+            m_DependenciesIsNotExistsIsNoProblem = true;
+            return true;
+        }
+        else
+        {
+            m_DependenciesIsNotExistsIsNoProblem = false;
+            return false;
+        }
     }
     /* l_DepsFilename content filename for <project>.depend */
     return reLoadDependecies(l_DepsFilename.GetFullPath(),p_pTarget,p_pCompiler);
@@ -177,7 +189,6 @@ bool cbMGMakefile::getDependencies(ProjectBuildTarget *p_pTarget,Compiler* p_pCo
 bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextFile &p_File )
 {
     bool l_Ret = false;
-//    ProjectBuildTarget* l_pTarget = m_pProj->GetBuildTarget( p_TargetName );
     if ( !p_BuildTarget )
     {
         wxString l_Msg = _( "Can't found an active target!\n"
@@ -201,13 +212,13 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
 
     if ( !getDependencies( p_BuildTarget, l_pCompiler ) ) return false;
 
-    if( !m_VariablesIsSaved )
+    if ( !m_VariablesIsSaved )
     {
-      m_Variables.AddVariable(_T("CPP"),l_pCompiler->GetPrograms().CPP);
-      m_Variables.AddVariable(_T("CC"),l_pCompiler->GetPrograms().C);
-      m_Variables.AddVariable(_T("LD"),l_pCompiler->GetPrograms().LD);
-      m_Variables.AddVariable(_T("LIB"),l_pCompiler->GetPrograms().LIB);
-      m_Variables.AddVariable(_T("WINDRES"),l_pCompiler->GetPrograms().WINDRES);
+        m_Variables.AddVariable(_T("CPP"),l_pCompiler->GetPrograms().CPP);
+        m_Variables.AddVariable(_T("CC"),l_pCompiler->GetPrograms().C);
+        m_Variables.AddVariable(_T("LD"),l_pCompiler->GetPrograms().LD);
+        m_Variables.AddVariable(_T("LIB"),l_pCompiler->GetPrograms().LIB);
+        m_Variables.AddVariable(_T("WINDRES"),l_pCompiler->GetPrograms().WINDRES);
     }
 
     const wxArrayString& l_CommandsBeforeBuild = p_BuildTarget->GetCommandsBeforeBuild();
@@ -383,7 +394,7 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
                                               l_Object,
                                               pfd.object_file_flat,
                                               pfd.dep_file );
-            if( m_Objs.size() )
+            if ( m_Objs.size() )
             {
                 m_Objs += _T(' ');
             }
@@ -417,10 +428,10 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
 #endif
     m_Rules.Add( l_Rule );
 
-    if( !m_VariablesIsSaved )
+    if ( !m_VariablesIsSaved )
     {
-      m_Variables.SaveAllVars( p_File );
-      m_VariablesIsSaved = true;
+        m_Variables.SaveAllVars( p_File );
+        m_VariablesIsSaved = true;
     }
     p_File.AddLine( _T("# Target: ") + l_TargetName );
     p_File.AddLine( wxEmptyString );
@@ -458,7 +469,7 @@ bool cbMGMakefile::SaveMakefile()
     l_File.AddLine( wxEmptyString );
 
     long l_TargetsCount = m_pProj->GetBuildTargetsCount();
-    if( l_TargetsCount < 1 )
+    if ( l_TargetsCount < 1 )
     {
         wxString l_Msg = _( "Can't found targets!\n"
                             "C::B MakefileGen could not complete the operation." );
@@ -467,26 +478,50 @@ bool cbMGMakefile::SaveMakefile()
         return l_Ret;
     }
 
-    for( long i = 0; i < l_TargetsCount; i++ )
+    m_DependenciesIsNotExistsIsNoProblem = false;
+    if ( m_AllTargets )
     {
-      ProjectBuildTarget *l_BuildTarget = m_pProj->GetBuildTarget( i );
+        for ( long i = 0; i < l_TargetsCount; i++ )
+        {
+            ProjectBuildTarget *l_BuildTarget = m_pProj->GetBuildTarget( i );
 
-      if( l_BuildTarget )
-      {
-          l_Ret = formFileForTarget( l_BuildTarget, l_File );
+            if ( l_BuildTarget )
+            {
+                if ( !m_ProceedTargets.IsEmpty() )
+                {
+                    m_ProceedTargets += _T(", ");
+                }
+                m_ProceedTargets += l_BuildTarget->GetTitle();
 
-          if( l_Ret )
-          {
-              l_File.Write();
-          }
-          else
-          {
-              break;
-          }
-      }
+                l_Ret = formFileForTarget( l_BuildTarget, l_File );
+
+                if ( l_Ret )
+                {
+                    l_File.Write();
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+    }
+    else
+    {
+        ProjectBuildTarget *l_BuildTarget = m_pProj->GetBuildTarget( m_pProj->GetActiveBuildTarget() );
+
+        if ( l_BuildTarget )
+        {
+            m_ProceedTargets += l_BuildTarget->GetTitle();
+
+            l_Ret = formFileForTarget( l_BuildTarget, l_File );
+            if ( l_Ret )
+            {
+                l_File.Write();
+            }
+        }
     }
     l_File.Close();
-//    l_Ret = true;
     return l_Ret;
 }
 
@@ -509,10 +544,10 @@ bool cbMGMakefile::SaveAllRules( wxTextFile& pFile )
         {
             l_Prefix = l_CommandPrefix;
             wxString l_Cmd = lRule.GetCommands()[ k ];
-            if( _T('-') == l_Cmd[ 0 ] )
+            if ( _T('-') == l_Cmd[ 0 ] )
             {
-              l_Cmd = l_Cmd.SubString( 1, l_Cmd.size() );
-              l_Prefix += _T('-');
+                l_Cmd = l_Cmd.SubString( 1, l_Cmd.size() );
+                l_Prefix += _T('-');
             }
             if ( m_IsSilence )
             {

@@ -29,7 +29,7 @@ END_EVENT_TABLE()
 cbmakefilecfg::cbmakefilecfg(wxWindow* parent,wxWindowID id)
 {
     //(*Initialize(cbmakefilecfg)
-    Create(parent, id, wxDefaultPosition, wxSize(572,82), wxTAB_TRAVERSAL, _T("id"));
+    Create(parent, id, wxDefaultPosition, wxSize(584,81), wxTAB_TRAVERSAL, _T("id"));
     m_pStaticText1 = new wxStaticText(this, ID_STATICTEXT1, _("Filename :"), wxPoint(4,6), wxDefaultSize, 0, _T("ID_STATICTEXT1"));
     m_pTCFilename = new wxTextCtrl(this, ID_TEXTCTRL1, _("Makefile.gen"), wxPoint(63,3), wxSize(510,21), 0, wxDefaultValidator, _T("ID_TEXTCTRL1"));
     m_pCBOverwrite = new wxCheckBox(this, ID_CHECKBOX1, _("Overwrite if exists"), wxPoint(63,28), wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX1"));

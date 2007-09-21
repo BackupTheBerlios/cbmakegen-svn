@@ -4,26 +4,26 @@
 namespace AutoVersion{
 	
 	//Date Version Types
-	static char DATE[] = "30";
-	static char MONTH[] = "08";
+	static char DATE[] = "21";
+	static char MONTH[] = "09";
 	static char YEAR[] = "2007";
-	static double UBUNTU_VERSION_STYLE = 7.08;
+	static double UBUNTU_VERSION_STYLE = 7.09;
 	
 	//Software Status
-	static char STATUS[] = "Beta";
-	static char STATUS_SHORT[] = "b";
+	static char STATUS[] = "Alpha";
+	static char STATUS_SHORT[] = "a";
 	
 	//Standard Version Type
 	static long MAJOR = 0;
-	static long MINOR = 2;
+	static long MINOR = 3;
 	static long BUILD = 0;
 	static long REVISION = 0;
 	
 	//Miscellaneous Version Types
-	static long BUILDS_COUNT = 4;
-	#define RC_FILEVERSION 0,2,0,0
-	#define RC_FILEVERSION_STRING "0, 2, 0, 0\0"
-	static char FULLVERSION_STRING[] = "0.2.0.0";
+	static long BUILDS_COUNT = 62;
+	#define RC_FILEVERSION 0,3,0,0
+	#define RC_FILEVERSION_STRING "0, 3, 0, 0\0"
+	static char FULLVERSION_STRING[] = "0.3.0.0";
 	
 	//SVN Version
 	static char SVN_REVISION[] = "3";
