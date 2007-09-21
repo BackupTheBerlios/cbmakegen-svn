@@ -29,14 +29,14 @@ END_EVENT_TABLE()
 cbmakefilecfg::cbmakefilecfg(wxWindow* parent,wxWindowID id)
 {
     //(*Initialize(cbmakefilecfg)
-    Create(parent, id, wxDefaultPosition, wxSize(584,81), wxTAB_TRAVERSAL, _T("id"));
-    m_pStaticText1 = new wxStaticText(this, ID_STATICTEXT1, _("Filename :"), wxPoint(4,6), wxDefaultSize, 0, _T("ID_STATICTEXT1"));
-    m_pTCFilename = new wxTextCtrl(this, ID_TEXTCTRL1, _("Makefile.gen"), wxPoint(63,3), wxSize(510,21), 0, wxDefaultValidator, _T("ID_TEXTCTRL1"));
-    m_pCBOverwrite = new wxCheckBox(this, ID_CHECKBOX1, _("Overwrite if exists"), wxPoint(63,28), wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX1"));
+    Create(parent, id, wxDefaultPosition, wxSize(587,81), wxTAB_TRAVERSAL, _T("id"));
+    m_pStaticText1 = new wxStaticText(this, ID_STATICTEXT1, _("Filename :"), wxPoint(4,8), wxDefaultSize, 0, _T("ID_STATICTEXT1"));
+    m_pTCFilename = new wxTextCtrl(this, ID_TEXTCTRL1, wxEmptyString, wxPoint(88,6), wxSize(481,21), 0, wxDefaultValidator, _T("ID_TEXTCTRL1"));
+    m_pCBOverwrite = new wxCheckBox(this, ID_CHECKBOX1, _("Overwrite if exists"), wxPoint(88,28), wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX1"));
     m_pCBOverwrite->SetValue(false);
-    m_pCBSilence = new wxCheckBox(this, ID_CHECKBOX2, _("Add \'@\' prefix for commands"), wxPoint(63,48), wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX2"));
+    m_pCBSilence = new wxCheckBox(this, ID_CHECKBOX2, _("Add \'@\' prefix for commands"), wxPoint(88,48), wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX2"));
     m_pCBSilence->SetValue(false);
-    m_pCBAllTargets = new wxCheckBox(this, ID_CHECKBOX3, _("Generate for target \'All\' (else being used active target only)"), wxPoint(63,68), wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX3"));
+    m_pCBAllTargets = new wxCheckBox(this, ID_CHECKBOX3, _("Generate for all targets (else being used active target only)"), wxPoint(88,68), wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX3"));
     m_pCBAllTargets->SetValue(false);
     //*)
     ConfigManager* cfg = Manager::Get()->GetConfigManager(_T("cbMakefileGen"));
