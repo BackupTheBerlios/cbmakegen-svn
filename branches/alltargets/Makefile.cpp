@@ -283,7 +283,9 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
     l_Rule.SetPrerequisites( _T("$(") + l_ObjsName + _T(")") );
 
     wxString kind_of_output = _T( "unknown" );
-    CommandType ct = ctInvalid; // get rid of compiler warning
+    /* ctInvalid was deleted */
+    /* FIXME (shl#1#): Wrongly used ctCompileObjectCmd. Can have problems . */
+    CommandType ct = ctCompileObjectCmd; // get rid of compiler warning
     switch ( p_BuildTarget->GetTargetType() )
     {
     case ttConsoleOnly:
