@@ -6,14 +6,14 @@
 #include <compiler.h>
 #include <compilerfactory.h>
 #include <macrosmanager.h>
+#include "version.h"
 
 #include <wx/arrimpl.cpp>
 WX_DEFINE_OBJARRAY( cbMGArrayOfRules );
 WX_DEFINE_OBJARRAY( cbMGSortFilesArray ); // keep our own copy, to sort it by file weight (priority)
 
-static wxString sHeader = _T(
-                              "# A simple makefile generator by KiSoft, 2007. mailto: kisoft@rambler.ru"
-                          );
+static wxString sHeader = _T( "# A simple makefile generator by KiSoft, 2007. mailto: kisoft@rambler.ru" );
+static wxString sHeaderVersion = _T( "# version: $MAJOR.$MINOR.$BUILD.$REVISION" );
 
 const wxString cmdbefore = _T( "commandsbeforebuild" );
 const wxString cmdafter  = _T( "commandsafterbuild" );
@@ -21,7 +21,8 @@ const wxString cmdphony  = _T( ".PHONY" );
 const wxString cmdclean  = _T("clean");
 
 cbMGMakefile::cbMGMakefile( cbProject* ppProject, const wxString& pFileName, bool pOverwrite,bool pSilence,bool pAllTargets)
-        : m_CommandPrefix( _T( '\t' ) )
+        : m_Objs()
+        , m_CommandPrefix( _T( '\t' ) )
         , m_CommandPrefixRepeatCnt( 1 )
         , m_pProj( ppProject )
         , m_Filename( pFileName )
@@ -30,7 +31,6 @@ cbMGMakefile::cbMGMakefile( cbProject* ppProject, const wxString& pFileName, boo
         , m_Overwrite( pOverwrite )
         , m_AllTargets( pAllTargets )
         , m_VariablesIsSaved( false )
-        , m_Objs()
         , m_ProceedTargets( _T("") )
         , m_DependenciesIsNotExistsIsNoProblem( false )
 {
@@ -82,7 +82,14 @@ cbMGSortFilesArray cbMGMakefile::GetProjectFilesSortedByWeight( ProjectBuildTarg
 bool cbMGMakefile::reLoadDependecies(const wxString &p_DepsFileName,ProjectBuildTarget *p_pTarget,Compiler* p_pCompiler)
 {
     m_Deps.Clear();
-    if ( !wxFileExists( p_DepsFileName ) ) return false;
+    if ( !wxFileExists( p_DepsFileName ) )
+    {
+        wxString l_Msg = _( "Dependencies file (.depend) is absent!\n"
+                            "C::B MakefileGen could not complete the operation." );
+        cbMessageBox( l_Msg, _( "Error" ), wxICON_ERROR | wxOK, (wxWindow *)Manager::Get()->GetAppWindow() );
+        Manager::Get()->GetMessageManager()->DebugLog( l_Msg );
+        return false;
+    }
 
     wxString l_Buf;
     wxString l_VarName;
@@ -157,6 +164,8 @@ bool cbMGMakefile::reLoadDependecies(const wxString &p_DepsFileName,ProjectBuild
     m_Deps.SaveAllVars( l_DebFile );
     l_DebFile.Write();
     l_DebFile.Close(); */
+    /* return was absent here! */
+    return true;
 }
 
 bool cbMGMakefile::getDependencies(ProjectBuildTarget *p_pTarget,Compiler* p_pCompiler)
@@ -209,6 +218,15 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
 
     const wxString& l_CompilerId = p_BuildTarget->GetCompilerID();
     Compiler* l_pCompiler = CompilerFactory::GetCompiler( l_CompilerId );
+
+    if( !l_pCompiler )
+    {
+        wxString l_Msg = _( "Can't found an compiler settings!\n"
+                            "C::B MakefileGen could not complete the operation." );
+        cbMessageBox( l_Msg, _( "Error" ), wxICON_ERROR | wxOK, (wxWindow *)Manager::Get()->GetAppWindow() );
+        Manager::Get()->GetMessageManager()->DebugLog( l_Msg );
+        return false;
+    }
 
     if ( !getDependencies( p_BuildTarget, l_pCompiler ) ) return false;
 
@@ -333,6 +351,9 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
     {
         l_Rule.AddCommand( _T( "echo Building " ) + kind_of_output + _T( " " ) + l_OutFileName.GetFullPath() );
         wxString l_LinkerCmd = l_pCompiler->GetCommand( ct );
+
+
+        Manager::Get()->GetMessageManager()->DebugLog(wxString::Format( _("LinkerCmd: %s"), l_LinkerCmd.c_str()) );
         l_pCompiler->GenerateCommandLine( l_LinkerCmd,
                                           p_BuildTarget,
                                           NULL,
@@ -389,6 +410,8 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
                 l_SourceFile = pfd.source_file;
             }
             QuoteStringIfNeeded( l_SourceFile );
+            Manager::Get()->GetMessageManager()->DebugLog(wxString::Format( _("CompilerCmd: %s"), l_CompilerCmd.c_str()) );
+            /* FIXME: traps after next command */
             l_pCompiler->GenerateCommandLine( l_CompilerCmd,
                                               p_BuildTarget,
                                               pf,
@@ -468,6 +491,20 @@ bool cbMGMakefile::SaveMakefile()
     }
 
     l_File.AddLine( sHeader );
+    {
+        wxString lHeaderVersion = sHeaderVersion;
+        /* FIXME (shl#1#): Add HeaderVersion replacing */
+        wxString lTmp;
+        lTmp = wxString::Format(_T("%d"),AutoVersion::MAJOR);
+        lHeaderVersion.Replace(_T("$MAJOR"),lTmp,true);
+        lTmp = wxString::Format(_T("%d"),AutoVersion::MINOR);
+        lHeaderVersion.Replace(_T("$MINOR"),lTmp,true);
+        lTmp = wxString::Format(_T("%d"),AutoVersion::BUILD);
+        lHeaderVersion.Replace(_T("$BUILD"),lTmp,true);
+        lTmp = wxString::Format(_T("%d"),AutoVersion::REVISION);
+        lHeaderVersion.Replace(_T("$REVISION"),lTmp,true);
+        l_File.AddLine( lHeaderVersion );
+    }
     l_File.AddLine( wxEmptyString );
 
     long l_TargetsCount = m_pProj->GetBuildTargetsCount();
@@ -534,7 +571,6 @@ bool cbMGMakefile::SaveAllRules( wxTextFile& pFile )
     size_t num = m_Rules.GetCount();
     unsigned long i;
     unsigned long k;
-    bool l_Ignore = false;
     wxString l_CommandPrefix = GetCommandPrefix();
     wxString l_Prefix;
 

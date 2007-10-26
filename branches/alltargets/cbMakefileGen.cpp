@@ -125,8 +125,8 @@ void cbMakefileGen::OnExecute(wxCommandEvent &event)
     }
 
     ConfigManager* cfg = Manager::Get()->GetConfigManager(_T("cbMakefileGen"));
-    m_Filename = cfg->Read(_T("/filename"),_T("Makefile"));
-    m_Overwrite = cfg->ReadBool(_T("/overwrite"),true);
+    m_Filename = cfg->Read(_T("/filename"),_T("Makefile.gen"));
+    m_Overwrite = cfg->ReadBool(_T("/overwrite"),false);
     m_Silence = cfg->ReadBool(_T("/silence"),true);
     m_AllTargets = cfg->ReadBool(_T("/alltargets"),false);
     cbMGMakefile lMakefile(project,m_Filename,m_Overwrite,m_Silence,m_AllTargets);

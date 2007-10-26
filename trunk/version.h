@@ -4,30 +4,31 @@
 namespace AutoVersion{
 	
 	//Date Version Types
-	static char DATE[] = "21";
-	static char MONTH[] = "09";
-	static char YEAR[] = "2007";
-	static double UBUNTU_VERSION_STYLE = 7.09;
+	static const char DATE[] = "26";
+	static const char MONTH[] = "10";
+	static const char YEAR[] = "2007";
+	static const double UBUNTU_VERSION_STYLE = 7.10;
 	
 	//Software Status
-	static char STATUS[] = "Alpha";
-	static char STATUS_SHORT[] = "a";
+	static const char STATUS[] = "Beta";
+	static const char STATUS_SHORT[] = "b";
 	
 	//Standard Version Type
-	static long MAJOR = 0;
-	static long MINOR = 3;
-	static long BUILD = 0;
-	static long REVISION = 0;
+	static const long MAJOR = 0;
+	static const long MINOR = 3;
+	static const long BUILD = 11;
+	static const long REVISION = 10;
 	
 	//Miscellaneous Version Types
-	static long BUILDS_COUNT = 62;
-	#define RC_FILEVERSION 0,3,0,0
-	#define RC_FILEVERSION_STRING "0, 3, 0, 0\0"
-	static char FULLVERSION_STRING[] = "0.3.0.0";
+	static const long BUILDS_COUNT = 93;
+	#define RC_FILEVERSION 0,3,11,10
+	#define RC_FILEVERSION_STRING "0, 3, 11, 10\0"
+	static const char FULLVERSION_STRING[] = "0.3.11.10";
 	
 	//SVN Version
-	static char SVN_REVISION[] = "3";
-	static char SVN_DATE[] = "2007-08-07T10:48:18.310453Z";
+	static const char SVN_REVISION[] = "3";
+	static const char SVN_DATE[] = "2007-08-07T10:48:18.310453Z";
 	
+
 }
 #endif //VERSION_h

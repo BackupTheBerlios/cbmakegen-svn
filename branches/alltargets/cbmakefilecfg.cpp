@@ -40,8 +40,8 @@ cbmakefilecfg::cbmakefilecfg(wxWindow* parent,wxWindowID id)
     m_pCBAllTargets->SetValue(false);
     //*)
     ConfigManager* cfg = Manager::Get()->GetConfigManager(_T("cbMakefileGen"));
-    m_pTCFilename->SetValue(cfg->Read(_T("/filename"),_T("Makefile")));
-    m_pCBOverwrite->SetValue(cfg->ReadBool(_T("/overwrite"),true));
+    m_pTCFilename->SetValue(cfg->Read(_T("/filename"),_T("Makefile.gen")));
+    m_pCBOverwrite->SetValue(cfg->ReadBool(_T("/overwrite"),false));
     m_pCBSilence->SetValue(cfg->ReadBool(_T("/silence"),true));
     m_pCBAllTargets->SetValue(cfg->ReadBool(_T("/alltargets"),false));
 }
@@ -60,3 +60,4 @@ void cbmakefilecfg::OnApply()
     cfg->Write(_T("/silence"),(bool)m_pCBSilence->GetValue());
     cfg->Write(_T("/alltargets"),(bool)m_pCBAllTargets->GetValue());
 }
+

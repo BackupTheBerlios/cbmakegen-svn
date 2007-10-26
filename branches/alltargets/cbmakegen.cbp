@@ -35,7 +35,6 @@
 					<Add directory="$(#wx.lib)\gcc_dll\mswu" />
 				</Compiler>
 				<Linker>
-					<Add option="-s" />
 					<Add library="codeblocks" />
 					<Add library="wxmsw28u" />
 					<Add directory="$(#cb)\devel" />
@@ -74,7 +73,6 @@
 					<Add directory="$(#wx.lib)\gcc_dll\mswu" />
 				</Compiler>
 				<Linker>
-					<Add option="-s" />
 					<Add library="codeblocks" />
 					<Add library="wxmsw28u" />
 					<Add directory="$(#cb)\devel" />
@@ -91,6 +89,12 @@
 		<VirtualTargets>
 			<Add alias="All" targets="default;Plugin;" />
 		</VirtualTargets>
+		<Compiler>
+			<Add option="-Wall" />
+		</Compiler>
+		<Linker>
+			<Add option="-s" />
+		</Linker>
 		<Unit filename="Makefile.cpp">
 			<Option weight="30" />
 		</Unit>
@@ -107,18 +111,24 @@
 		<Unit filename="cbMakefileGen.h" />
 		<Unit filename="cbmakefilecfg.cpp" />
 		<Unit filename="cbmakefilecfg.h" />
+		<Unit filename="cbmakefileconsole.cpp" />
+		<Unit filename="cbmakefileconsole.h" />
+		<Unit filename="cbmakefilegencons.cpp" />
+		<Unit filename="cbmakefilegencons.h" />
 		<Unit filename="manifest.xml" />
-		<Unit filename="version.h">
-			<Option target="Plugin" />
-		</Unit>
+		<Unit filename="version.h" />
 		<Unit filename="wxsmith\cbmakefilecfg.wxs" />
+		<Unit filename="wxsmith\cbmakefilegencons.wxs" />
 		<Extensions>
-			<code_completion />
+			<code_completion>
+				<search_path add="D:\SHL\CMS-MULTY\" />
+			</code_completion>
 			<envvars />
 			<wxsmith version="1">
 				<gui name="wxWidgets" src="" main="" init_handlers="necessary" language="CPP" />
 				<resources>
 					<wxPanel wxs="wxsmith/cbmakefilecfg.wxs" src="cbmakefilecfg.cpp" hdr="cbmakefilecfg.h" name="cbmakefilecfg" language="CPP" />
+					<wxFrame wxs="wxsmith/cbmakefilegencons.wxs" src="cbmakefilegencons.cpp" hdr="cbmakefilegencons.h" name="cbmakefilegencons" language="CPP" />
 				</resources>
 			</wxsmith>
 			<debugger />
