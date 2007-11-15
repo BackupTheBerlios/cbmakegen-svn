@@ -2,7 +2,7 @@
 #include <wx/textfile.h>
 #include "Makefile.hpp"
 #include <globals.h>
-#include <messagemanager.h>
+#include <logmanager.h>
 #include <compiler.h>
 #include <compilerfactory.h>
 #include <macrosmanager.h>
@@ -87,7 +87,7 @@ bool cbMGMakefile::reLoadDependecies(const wxString &p_DepsFileName,ProjectBuild
         wxString l_Msg = _( "Dependencies file (.depend) is absent!\n"
                             "C::B MakefileGen could not complete the operation." );
         cbMessageBox( l_Msg, _( "Error" ), wxICON_ERROR | wxOK, (wxWindow *)Manager::Get()->GetAppWindow() );
-        Manager::Get()->GetMessageManager()->DebugLog( l_Msg );
+        Manager::Get()->GetLogManager()->DebugLog( l_Msg );
         return false;
     }
 
@@ -203,7 +203,7 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
         wxString l_Msg = _( "Can't found an active target!\n"
                             "C::B MakefileGen could not complete the operation." );
         cbMessageBox( l_Msg, _( "Error" ), wxICON_ERROR | wxOK, (wxWindow *)Manager::Get()->GetAppWindow() );
-        Manager::Get()->GetMessageManager()->DebugLog( l_Msg );
+        Manager::Get()->GetLogManager()->DebugLog( l_Msg );
         return l_Ret;
     }
 
@@ -224,7 +224,7 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
         wxString l_Msg = _( "Can't found an compiler settings!\n"
                             "C::B MakefileGen could not complete the operation." );
         cbMessageBox( l_Msg, _( "Error" ), wxICON_ERROR | wxOK, (wxWindow *)Manager::Get()->GetAppWindow() );
-        Manager::Get()->GetMessageManager()->DebugLog( l_Msg );
+        Manager::Get()->GetLogManager()->DebugLog( l_Msg );
         return false;
     }
 
@@ -301,9 +301,8 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
     l_Rule.SetPrerequisites( _T("$(") + l_ObjsName + _T(")") );
 
     wxString kind_of_output = _T( "unknown" );
-    /* ctInvalid was deleted */
-    /* FIXME (shl#1#): Wrongly used ctCompileObjectCmd. Can have problems . */
-    CommandType ct = ctCompileObjectCmd; // get rid of compiler warning
+    CommandType ct = ctCount;
+    bool l_TargetTypeValid = true;
     switch ( p_BuildTarget->GetTargetType() )
     {
     case ttConsoleOnly:
@@ -334,6 +333,9 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
         ct = ctLinkConsoleExeCmd;
         kind_of_output = _T( "commands only" );
         break;
+    default:
+        l_TargetTypeValid = false;
+        break;
 
 //      case ttCommandsOnly:
 //          // add target post-build commands
@@ -350,18 +352,20 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
     else*/
     {
         l_Rule.AddCommand( _T( "echo Building " ) + kind_of_output + _T( " " ) + l_OutFileName.GetFullPath() );
-        wxString l_LinkerCmd = l_pCompiler->GetCommand( ct );
+        if( l_TargetTypeValid )
+        {
+            wxString l_LinkerCmd = l_pCompiler->GetCommand( ct );
 
-
-        Manager::Get()->GetMessageManager()->DebugLog(wxString::Format( _("LinkerCmd: %s"), l_LinkerCmd.c_str()) );
-        l_pCompiler->GenerateCommandLine( l_LinkerCmd,
-                                          p_BuildTarget,
-                                          NULL,
-                                          l_OutFileName.GetFullPath(),
-                                          _T("$$(") + l_TargetName + _T(")"),
-                                          wxEmptyString,
-                                          wxEmptyString );
-        l_Rule.AddCommand( l_LinkerCmd );
+            Manager::Get()->GetLogManager()->DebugLog(wxString::Format( _("LinkerCmd: %s"), l_LinkerCmd.c_str()) );
+            l_pCompiler->GenerateCommandLine( l_LinkerCmd,
+                                              p_BuildTarget,
+                                              NULL,
+                                              l_OutFileName.GetFullPath(),
+                                              _T("$$(") + l_TargetName + _T(")"),
+                                              wxEmptyString,
+                                              wxEmptyString );
+            l_Rule.AddCommand( l_LinkerCmd );
+        }
     }
     m_Rules.Add( l_Rule );
 
@@ -410,7 +414,7 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
                 l_SourceFile = pfd.source_file;
             }
             QuoteStringIfNeeded( l_SourceFile );
-            Manager::Get()->GetMessageManager()->DebugLog(wxString::Format( _("CompilerCmd: %s"), l_CompilerCmd.c_str()) );
+            Manager::Get()->GetLogManager()->DebugLog(wxString::Format( _("CompilerCmd: %s"), l_CompilerCmd.c_str()) );
             /* FIXME: traps after next command */
             l_pCompiler->GenerateCommandLine( l_CompilerCmd,
                                               p_BuildTarget,
@@ -513,7 +517,7 @@ bool cbMGMakefile::SaveMakefile()
         wxString l_Msg = _( "Can't found targets!\n"
                             "C::B MakefileGen could not complete the operation." );
         cbMessageBox( l_Msg, _( "Error" ), wxICON_ERROR | wxOK, (wxWindow *)Manager::Get()->GetAppWindow() );
-        Manager::Get()->GetMessageManager()->DebugLog( l_Msg );
+        Manager::Get()->GetLogManager()->DebugLog( l_Msg );
         return l_Ret;
     }
 

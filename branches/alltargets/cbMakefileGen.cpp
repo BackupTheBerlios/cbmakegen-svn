@@ -6,7 +6,7 @@
 #include "cbmakefilecfg.h"
 #include <cbproject.h>
 #include <projectmanager.h>
-#include <messagemanager.h>
+#include <logmanager.h>
 #include <configmanager.h>
 
 int MakefileGenId = wxNewId();
@@ -120,7 +120,7 @@ void cbMakefileGen::OnExecute(wxCommandEvent &event)
         msg = _("You need to open a project\nbefore using the plugin!\n"
                 "C::B MakefileGen could not complete the operation.");
         cbMessageBox(msg, _("Error"), wxICON_ERROR | wxOK, Manager::Get()->GetAppWindow());
-        Manager::Get()->GetMessageManager()->DebugLog(msg);
+        Manager::Get()->GetLogManager()->DebugLog(msg);
         return;
     }
 
