@@ -17,6 +17,8 @@ class cbMGMakefile
 {
     cbMGArrayOfRules m_Rules;
     cbMGVariable m_Variables;
+    wxString     m_Objs;
+    cbMGVariable m_Deps;
     wxChar       m_CommandPrefix;
     long         m_CommandPrefixRepeatCnt;
     cbProject    *m_pProj;
@@ -24,8 +26,12 @@ class cbMGMakefile
     wxString     m_Path;
     bool         m_IsSilence;
     bool         m_Overwrite;
+    bool         m_AllTargets;
+    bool         m_VariablesIsSaved;
+    wxString     m_ProceedTargets;
+    bool         m_DependenciesIsNotExistsIsNoProblem;
 public:
-    cbMGMakefile(cbProject* ppProj, const wxString& pFileName,bool pOverwrite,bool pSilence);
+    cbMGMakefile(cbProject* ppProj, const wxString& pFileName,bool pOverwrite,bool pSilence,bool pAllTargets);
     virtual ~cbMGMakefile();
 
     void SetCommandPrefix( const wxChar& pCommandPrefix );
@@ -44,9 +50,16 @@ public:
     {
         m_IsSilence = pIsSilence;
     }
+    wxString GetProceedTargets() const
+    {
+        return m_ProceedTargets;
+    }
 protected:
     bool SaveAllRules( wxTextFile& pFile );
     cbMGSortFilesArray GetProjectFilesSortedByWeight(ProjectBuildTarget* ppTarget, bool pCompile, bool pLink);
+    bool getDependencies(ProjectBuildTarget *p_pTarget,Compiler* p_pCompiler);
+    bool reLoadDependecies(const wxString &p_DepsFileName,ProjectBuildTarget *p_pTarget,Compiler* p_pCompiler);
+    bool formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextFile &p_File );
 private:
 };
 

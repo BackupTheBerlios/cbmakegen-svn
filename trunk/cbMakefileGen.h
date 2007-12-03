@@ -133,6 +133,7 @@ protected:
     wxString m_Filename;
     bool     m_Overwrite;
     bool     m_Silence;
+    bool     m_AllTargets;
 
 private:
     DECLARE_EVENT_TABLE();

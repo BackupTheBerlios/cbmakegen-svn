@@ -1,26 +1,27 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <wxsmith>
 	<object class="wxPanel" name="cbmakefilecfg">
-		<size>587,81</size>
+		<size>572,82</size>
 		<object class="wxStaticText" name="ID_STATICTEXT1" variable="m_pStaticText1" member="yes">
 			<label>Filename :</label>
-			<pos>4,8</pos>
+			<pos>4,6</pos>
 		</object>
 		<object class="wxTextCtrl" name="ID_TEXTCTRL1" variable="m_pTCFilename" member="yes">
-			<pos>88,6</pos>
-			<size>481,21</size>
+			<value>Makefile.gen</value>
+			<pos>63,3</pos>
+			<size>510,21</size>
 		</object>
 		<object class="wxCheckBox" name="ID_CHECKBOX1" variable="m_pCBOverwrite" member="yes">
 			<label>Overwrite if exists</label>
-			<pos>88,28</pos>
+			<pos>63,28</pos>
 		</object>
 		<object class="wxCheckBox" name="ID_CHECKBOX2" variable="m_pCBSilence" member="yes">
 			<label>Add &apos;@&apos; prefix for commands</label>
-			<pos>88,48</pos>
+			<pos>63,48</pos>
 		</object>
 		<object class="wxCheckBox" name="ID_CHECKBOX3" variable="m_pCBAllTargets" member="yes">
-			<label>Generate for all targets (else being used active target only)</label>
-			<pos>88,68</pos>
+			<label>Generate for target &apos;All&apos; (else being used active target only)</label>
+			<pos>63,68</pos>
 		</object>
 	</object>
 </wxsmith>

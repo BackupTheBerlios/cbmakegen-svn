@@ -8,7 +8,7 @@
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="default">
-				<Option output="..\..\..\devel\share\CodeBlocks\plugins\cbMakefileGen.dll" prefix_auto="1" extension_auto="1" />
+				<Option output="..\..\..\devel\share\CodeBlocks\plugins\cbMakefileGen" prefix_auto="1" extension_auto="1" />
 				<Option object_output="..\..\..\.objs\plugins\contrib\cbmakegen" />
 				<Option deps_output="..\..\..\.deps\plugins\contrib\cbmakegen" />
 				<Option type="3" />
@@ -24,7 +24,6 @@
 					<Add option="-DHAVE_W32API_H" />
 					<Add option="-D__WXMSW__" />
 					<Add option="-DWXUSINGDLL" />
-					<Add option="-DTIXML_USE_STL" />
 					<Add option="-DCB_PRECOMP" />
 					<Add option="-DWX_PRECOMP" />
 					<Add option="-DwxUSE_UNICODE" />
@@ -35,7 +34,6 @@
 					<Add directory="$(#wx.lib)\gcc_dll\mswu" />
 				</Compiler>
 				<Linker>
-					<Add option="-s" />
 					<Add library="codeblocks" />
 					<Add library="wxmsw28u" />
 					<Add directory="$(#cb)\devel" />
@@ -47,7 +45,7 @@
 				</ExtraCommands>
 			</Target>
 			<Target title="Plugin">
-				<Option output="..\..\..\devel\share\CodeBlocks\plugins\cbMakefileGen.dll" prefix_auto="1" extension_auto="1" />
+				<Option output="..\..\..\devel\share\CodeBlocks\plugins\cbMakefileGen" prefix_auto="1" extension_auto="1" />
 				<Option object_output="..\..\..\.objs\plugins\contrib\cbmakegen" />
 				<Option deps_output="..\..\..\.deps\plugins\contrib\cbmakegen" />
 				<Option type="3" />
@@ -63,7 +61,6 @@
 					<Add option="-DHAVE_W32API_H" />
 					<Add option="-D__WXMSW__" />
 					<Add option="-DWXUSINGDLL" />
-					<Add option="-DTIXML_USE_STL" />
 					<Add option="-DCB_PRECOMP" />
 					<Add option="-DWX_PRECOMP" />
 					<Add option="-DwxUSE_UNICODE" />
@@ -74,7 +71,6 @@
 					<Add directory="$(#wx.lib)\gcc_dll\mswu" />
 				</Compiler>
 				<Linker>
-					<Add option="-s" />
 					<Add library="codeblocks" />
 					<Add library="wxmsw28u" />
 					<Add directory="$(#cb)\devel" />
@@ -91,6 +87,12 @@
 		<VirtualTargets>
 			<Add alias="All" targets="default;Plugin;" />
 		</VirtualTargets>
+		<Compiler>
+			<Add option="-Wall" />
+		</Compiler>
+		<Linker>
+			<Add option="-s" />
+		</Linker>
 		<Unit filename="Makefile.cpp">
 			<Option weight="30" />
 		</Unit>
@@ -107,17 +109,27 @@
 		<Unit filename="cbMakefileGen.h" />
 		<Unit filename="cbmakefilecfg.cpp" />
 		<Unit filename="cbmakefilecfg.h" />
+		<Unit filename="cbmakefileconsole.cpp" />
+		<Unit filename="cbmakefileconsole.h" />
+		<Unit filename="cbmakefilegencons.cpp" />
+		<Unit filename="cbmakefilegencons.h" />
 		<Unit filename="manifest.xml" />
+		<Unit filename="version.h" />
 		<Unit filename="wxsmith\cbmakefilecfg.wxs" />
+		<Unit filename="wxsmith\cbmakefilegencons.wxs" />
 		<Extensions>
-			<code_completion />
+			<code_completion>
+				<search_path add="D:\SHL\CMS-MULTY\" />
+			</code_completion>
 			<envvars />
 			<wxsmith version="1">
 				<gui name="wxWidgets" src="" main="" init_handlers="necessary" language="CPP" />
 				<resources>
 					<wxPanel wxs="wxsmith/cbmakefilecfg.wxs" src="cbmakefilecfg.cpp" hdr="cbmakefilecfg.h" name="cbmakefilecfg" language="CPP" />
+					<wxFrame wxs="wxsmith/cbmakefilegencons.wxs" src="cbmakefilegencons.cpp" hdr="cbmakefilegencons.h" name="cbmakefilegencons" language="CPP" />
 				</resources>
 			</wxsmith>
+			<debugger />
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>

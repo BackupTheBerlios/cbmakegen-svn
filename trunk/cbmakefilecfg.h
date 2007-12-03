@@ -28,6 +28,7 @@ public:
     static const long ID_TEXTCTRL1;
     static const long ID_CHECKBOX1;
     static const long ID_CHECKBOX2;
+    static const long ID_CHECKBOX3;
     //*)
 
     /// @return the panel's title.
@@ -55,6 +56,7 @@ protected:
     wxTextCtrl* m_pTCFilename;
     wxCheckBox* m_pCBOverwrite;
     wxCheckBox* m_pCBSilence;
+    wxCheckBox* m_pCBAllTargets;
     //*)
 
 private:

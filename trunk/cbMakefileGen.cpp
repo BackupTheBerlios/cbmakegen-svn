@@ -6,7 +6,7 @@
 #include "cbmakefilecfg.h"
 #include <cbproject.h>
 #include <projectmanager.h>
-#include <messagemanager.h>
+#include <logmanager.h>
 #include <configmanager.h>
 
 int MakefileGenId = wxNewId();
@@ -120,20 +120,28 @@ void cbMakefileGen::OnExecute(wxCommandEvent &event)
         msg = _("You need to open a project\nbefore using the plugin!\n"
                 "C::B MakefileGen could not complete the operation.");
         cbMessageBox(msg, _("Error"), wxICON_ERROR | wxOK, Manager::Get()->GetAppWindow());
-        Manager::Get()->GetMessageManager()->DebugLog(msg);
+        Manager::Get()->GetLogManager()->DebugLog(msg);
         return;
     }
 
     ConfigManager* cfg = Manager::Get()->GetConfigManager(_T("cbMakefileGen"));
-    m_Filename = cfg->Read(_T("/filename"),_T("Makefile"));
-    m_Overwrite = cfg->ReadBool(_T("/overwrite"),true);
+    m_Filename = cfg->Read(_T("/filename"),_T("Makefile.gen"));
+    m_Overwrite = cfg->ReadBool(_T("/overwrite"),false);
     m_Silence = cfg->ReadBool(_T("/silence"),true);
-    cbMGMakefile lMakefile(project,m_Filename,m_Overwrite,m_Silence);
+    m_AllTargets = cfg->ReadBool(_T("/alltargets"),false);
+    cbMGMakefile lMakefile(project,m_Filename,m_Overwrite,m_Silence,m_AllTargets);
     if ( lMakefile.SaveMakefile() )
     {
         msg = _("C::B MakefileGen save : ");
-        msg += m_Filename;
+        msg += m_Filename; msg += _T("\n");
+        msg += _("Targets: ");
+        msg += lMakefile.GetProceedTargets();
         cbMessageBox(msg, _("Info"), wxICON_INFORMATION | wxOK, Manager::Get()->GetAppWindow());
+    }
+    else
+    {
+        msg = _("C::B MakefileGen found errors, saves aborted.");
+        cbMessageBox(msg, _("Error"), wxICON_EXCLAMATION | wxOK, Manager::Get()->GetAppWindow());
     }
 }
 
