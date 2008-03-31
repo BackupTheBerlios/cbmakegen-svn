@@ -7,6 +7,7 @@
 #include "Variable.hpp"
 
 class cbProject;
+class Compiler;
 
 #include <wx/arrimpl.cpp>
 
@@ -64,4 +65,5 @@ private:
 };
 
 #endif
+
 
