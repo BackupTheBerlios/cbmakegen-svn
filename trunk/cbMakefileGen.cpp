@@ -129,6 +129,8 @@ void cbMakefileGen::OnExecute(wxCommandEvent &event)
     m_Overwrite = cfg->ReadBool(_T("/overwrite"),false);
     m_Silence = cfg->ReadBool(_T("/silence"),true);
     m_AllTargets = cfg->ReadBool(_T("/alltargets"),false);
+    /* fix by oBFusCATed */
+    m_Filename.Replace(_T("$(proj_title)"), project->GetTitle());
     cbMGMakefile lMakefile(project,m_Filename,m_Overwrite,m_Silence,m_AllTargets);
     if ( lMakefile.SaveMakefile() )
     {

@@ -2,11 +2,11 @@
 #define CBMAKEFILEGENCONS_H
 
 //(*Headers(cbmakefilegencons)
-#include <wx/button.h>
-#include <wx/frame.h>
-#include <wx/panel.h>
 #include <wx/sizer.h>
 #include <wx/stattext.h>
+#include <wx/panel.h>
+#include <wx/button.h>
+#include <wx/frame.h>
 //*)
 
 class cbmakefilegencons: public wxFrame
@@ -17,19 +17,19 @@ class cbmakefilegencons: public wxFrame
 		virtual ~cbmakefilegencons();
 
 		//(*Declarations(cbmakefilegencons)
-		wxBoxSizer* BoxSizer1;
-		wxPanel* Panel1;
-		wxBoxSizer* BoxSizer2;
-		wxStaticText* StaticText1;
 		wxButton* Button1;
+		wxPanel* Panel1;
+		wxStaticText* StaticText1;
+		wxBoxSizer* BoxSizer2;
+		wxBoxSizer* BoxSizer1;
 		//*)
 
 	protected:
 
 		//(*Identifiers(cbmakefilegencons)
-		static const long ID_PANEL1;
 		static const long ID_STATICTEXT1;
 		static const long ID_BUTTON1;
+		static const long ID_PANEL1;
 		//*)
 
 	private:

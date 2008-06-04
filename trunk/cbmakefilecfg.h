@@ -8,10 +8,10 @@
 #endif
 
 //(*Headers(cbmakefilecfg)
-#include <wx/checkbox.h>
-#include <wx/panel.h>
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
+#include <wx/checkbox.h>
+#include <wx/panel.h>
 //*)
 
 #include <configurationpanel.h>
@@ -29,6 +29,7 @@ public:
     static const long ID_CHECKBOX1;
     static const long ID_CHECKBOX2;
     static const long ID_CHECKBOX3;
+    static const long ID_STATICTEXT2;
     //*)
 
     /// @return the panel's title.
@@ -53,9 +54,10 @@ protected:
 
     //(*Declarations(cbmakefilecfg)
     wxStaticText* m_pStaticText1;
+    wxStaticText* StaticText1;
     wxTextCtrl* m_pTCFilename;
-    wxCheckBox* m_pCBOverwrite;
     wxCheckBox* m_pCBSilence;
+    wxCheckBox* m_pCBOverwrite;
     wxCheckBox* m_pCBAllTargets;
     //*)
 

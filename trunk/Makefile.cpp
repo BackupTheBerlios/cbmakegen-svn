@@ -7,12 +7,13 @@
 #include <compilerfactory.h>
 #include <macrosmanager.h>
 #include "version.h"
+#include <annoyingdialog.h>
 
 #include <wx/arrimpl.cpp>
 WX_DEFINE_OBJARRAY( cbMGArrayOfRules );
 WX_DEFINE_OBJARRAY( cbMGSortFilesArray ); // keep our own copy, to sort it by file weight (priority)
 
-static wxString sHeader = _T( "# A simple makefile generator by KiSoft, 2007. mailto: kisoft@rambler.ru" );
+static wxString sHeader = _T( "# A simple makefile generator by KiSoft, 2008. mailto: kisoft@rambler.ru" );
 static wxString sHeaderVersion = _T( "# version: $MAJOR.$MINOR.$BUILD.$REVISION" );
 
 const wxString cmdbefore = _T( "commandsbeforebuild" );
@@ -180,7 +181,9 @@ bool cbMGMakefile::getDependencies(ProjectBuildTarget *p_pTarget,Compiler* p_pCo
         wxString lMsg = _( "Dependencies file " ) + l_DepsFilename.GetFullPath() + _(" is not exists!\n"
                         "Dependencies must being created before use MakefileGen plugin.\n"
                         "Continue anyway?" );
-        if (wxID_YES == cbMessageBox(lMsg, _("Warning"), wxICON_EXCLAMATION | wxYES_NO, (wxWindow *)Manager::Get()->GetAppWindow()))
+        // if (wxID_YES == cbMessageBox(lMsg, _("Warning"), wxICON_EXCLAMATION | wxYES_NO, (wxWindow *)Manager::Get()->GetAppWindow()))
+	AnnoyingDialog dlg(_("cbMakefileGen: Warning! Dependencies file is not exists"),lMsg,wxART_QUESTION,AnnoyingDialog::YES_NO,wxID_YES);
+	if( wxID_YES == dlg.ShowModal() )
         {
             m_DependenciesIsNotExistsIsNoProblem = true;
             return true;
@@ -361,7 +364,9 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
                                               p_BuildTarget,
                                               NULL,
                                               l_OutFileName.GetFullPath(),
-                                              _T("$$(") + l_TargetName + _T(")"),
+//                                              _T("$$(") + l_TargetName + _T(")"),
+                                              /* fix by oBFusCATed */
+                                              _T("$$(") + l_ObjsName + _T(")"),
                                               wxEmptyString,
                                               wxEmptyString );
             l_Rule.AddCommand( l_LinkerCmd );

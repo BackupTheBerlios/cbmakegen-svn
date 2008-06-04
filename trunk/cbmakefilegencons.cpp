@@ -1,20 +1,14 @@
 #include "cbmakefilegencons.h"
 
 //(*InternalHeaders(cbmakefilegencons)
-#include <wx/bitmap.h>
-#include <wx/font.h>
-#include <wx/fontenum.h>
-#include <wx/fontmap.h>
-#include <wx/image.h>
 #include <wx/intl.h>
-#include <wx/settings.h>
 #include <wx/string.h>
 //*)
 
 //(*IdInit(cbmakefilegencons)
-const long cbmakefilegencons::ID_PANEL1 = wxNewId();
 const long cbmakefilegencons::ID_STATICTEXT1 = wxNewId();
 const long cbmakefilegencons::ID_BUTTON1 = wxNewId();
+const long cbmakefilegencons::ID_PANEL1 = wxNewId();
 //*)
 
 BEGIN_EVENT_TABLE(cbmakefilegencons,wxFrame)
@@ -26,8 +20,8 @@ cbmakefilegencons::cbmakefilegencons(wxWindow* parent,wxWindowID id,const wxPoin
 {
 	//(*Initialize(cbmakefilegencons)
 	Create(parent, id, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE, _T("id"));
-	SetClientSize((size==wxDefaultSize)?wxSize(334,247):size);
-	Move(pos);
+	SetClientSize(wxSize(334,247));
+	Move(wxDefaultPosition);
 	BoxSizer1 = new wxBoxSizer(wxHORIZONTAL);
 	Panel1 = new wxPanel(this, ID_PANEL1, wxDefaultPosition, wxSize(398,214), wxTAB_TRAVERSAL, _T("ID_PANEL1"));
 	BoxSizer2 = new wxBoxSizer(wxHORIZONTAL);
