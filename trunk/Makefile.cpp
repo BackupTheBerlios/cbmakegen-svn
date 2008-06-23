@@ -21,6 +21,20 @@ const wxString cmdafter  = _T( "commandsafterbuild" );
 const wxString cmdphony  = _T( ".PHONY" );
 const wxString cmdclean  = _T("clean");
 
+
+void ConvertToMakefileFriendly(wxString& str)
+{
+    if(str.IsEmpty())
+        return;
+
+    str.Replace(_T("\\"), _T("/"));
+    for (unsigned int i = 0; i < str.Length(); ++i)
+    {
+        if (str[i] == _T(' ') && (i > 0 && str[i - 1] != _T('\\')))
+            str.insert(i, _T('\\'));
+    }
+}
+
 cbMGMakefile::cbMGMakefile( cbProject* ppProject, const wxString& pFileName, bool pOverwrite,bool pSilence,bool pAllTargets)
         : m_Objs()
         , m_CommandPrefix( _T( '\t' ) )
@@ -181,10 +195,11 @@ bool cbMGMakefile::getDependencies(ProjectBuildTarget *p_pTarget,Compiler* p_pCo
         wxString lMsg = _( "Dependencies file " ) + l_DepsFilename.GetFullPath() + _(" is not exists!\n"
                         "Dependencies must being created before use MakefileGen plugin.\n"
                         "Continue anyway?" );
-        // if (wxID_YES == cbMessageBox(lMsg, _("Warning"), wxICON_EXCLAMATION | wxYES_NO, (wxWindow *)Manager::Get()->GetAppWindow()))
+
+	// if (wxID_YES == cbMessageBox(lMsg, _("Warning"), wxICON_EXCLAMATION | wxYES_NO, (wxWindow *)Manager::Get()->GetAppWindow()))
 	AnnoyingDialog dlg(_("cbMakefileGen: Warning! Dependencies file is not exists"),lMsg,wxART_QUESTION,AnnoyingDialog::YES_NO,wxID_YES);
 	if( wxID_YES == dlg.ShowModal() )
-        {
+	{
             m_DependenciesIsNotExistsIsNoProblem = true;
             return true;
         }
@@ -248,6 +263,10 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
     wxString l_TargetFileName = p_BuildTarget->GetOutputFilename();
     Manager::Get()->GetMacrosManager()->ReplaceMacros(l_TargetFileName, p_BuildTarget);
     wxFileName l_OutFileName = UnixFilename(l_TargetFileName);
+    wxString l_OutFileNameFullPath = l_OutFileName.GetFullPath();
+    QuoteStringIfNeeded( l_OutFileNameFullPath );
+    wxString l_OutFileNameFullPathMakefileFriendly = l_OutFileNameFullPath;
+    ConvertToMakefileFriendly( l_OutFileNameFullPathMakefileFriendly );
     cbMGRule l_Rule;
     if ( 0 == l_TargetName.CmpNoCase( _T( "default" ) ) )
     {
@@ -262,7 +281,7 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
     {
         l_Pre = l_CmdBefore;
     }
-    l_Pre += l_OutFileName.GetFullPath();
+    l_Pre += l_OutFileNameFullPathMakefileFriendly;
     if ( l_CommandsAfterBuild.GetCount() > 0 )
     {
         l_Pre += _T(" ") + l_CmdAfter;
@@ -300,7 +319,7 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
         m_Rules.Add( l_Rule );
     }
     l_Rule.Clear();
-    l_Rule.SetTarget( l_OutFileName.GetFullPath() );
+    l_Rule.SetTarget( l_OutFileNameFullPathMakefileFriendly );
     l_Rule.SetPrerequisites( _T("$(") + l_ObjsName + _T(")") );
 
     wxString kind_of_output = _T( "unknown" );
@@ -354,7 +373,7 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
     }
     else*/
     {
-        l_Rule.AddCommand( _T( "echo Building " ) + kind_of_output + _T( " " ) + l_OutFileName.GetFullPath() );
+        l_Rule.AddCommand( _T( "echo Building " ) + kind_of_output + _T( " " ) + l_OutFileNameFullPath );
         if( l_TargetTypeValid )
         {
             wxString l_LinkerCmd = l_pCompiler->GetCommand( ct );
@@ -363,7 +382,7 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
             l_pCompiler->GenerateCommandLine( l_LinkerCmd,
                                               p_BuildTarget,
                                               NULL,
-                                              l_OutFileName.GetFullPath(),
+                                              l_OutFileNameFullPath,
 //                                              _T("$$(") + l_TargetName + _T(")"),
                                               /* fix by oBFusCATed */
                                               _T("$$(") + l_ObjsName + _T(")"),
@@ -405,6 +424,7 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
                             ? pcfb.buildCommand
                             : l_pCompiler->GetCommand( isResource ? ctCompileResourceCmd : ctCompileObjectCmd );
             wxString l_SourceFile;
+            wxString l_SourceFileMakefileFriendly;
             if ( l_pCompiler->GetSwitches().UseFullSourcePaths )
             {
                 l_SourceFile = UnixFilename( pfd.source_file_absolute_native );
@@ -418,6 +438,8 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
             {
                 l_SourceFile = pfd.source_file;
             }
+            l_SourceFileMakefileFriendly = l_SourceFile;
+            ConvertToMakefileFriendly( l_SourceFileMakefileFriendly );
             QuoteStringIfNeeded( l_SourceFile );
             Manager::Get()->GetLogManager()->DebugLog(wxString::Format( _("CompilerCmd: %s"), l_CompilerCmd.c_str()) );
             /* FIXME: traps after next command */
@@ -434,7 +456,7 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
             }
             m_Objs += l_Object;
             l_Rule.SetTarget( l_Object );
-            l_Rule.SetPrerequisites( l_SourceFile );
+            l_Rule.SetPrerequisites( l_SourceFileMakefileFriendly );
             l_Rule.AddCommand( _T( "echo Compiling: " ) + l_SourceFile );
             l_Rule.AddCommand( l_CompilerCmd );
             m_Rules.Add( l_Rule );
@@ -454,11 +476,11 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
     m_Rules.Add( l_Rule );
     l_Rule.Clear();
     l_Rule.SetTarget( l_CmdClean );
-    l_Rule.AddCommand( _T( "echo Delete $(" ) + l_ObjsName + _T( ") " ) + l_OutFileName.GetFullPath() );
+    l_Rule.AddCommand( _T( "echo Delete $(" ) + l_ObjsName + _T( ") " ) + l_OutFileNameFullPath );
 #ifdef __WXMSW__
-    l_Rule.AddCommand( _T( "-del /f $(" ) + l_ObjsName + _T( ") " ) + l_OutFileName.GetFullPath() );
+    l_Rule.AddCommand( _T( "-del /f $(" ) + l_ObjsName + _T( ") " ) + l_OutFileNameFullPath );
 #else
-    l_Rule.AddCommand( _T( "-rm -f $(" ) + l_ObjsName + _T( ") " ) + l_OutFileName.GetFullPath() );
+    l_Rule.AddCommand( _T( "-rm -f $(" ) + l_ObjsName + _T( ") " ) + l_OutFileNameFullPath );
 #endif
     m_Rules.Add( l_Rule );
 

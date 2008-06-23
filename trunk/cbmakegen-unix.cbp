@@ -18,14 +18,15 @@
 					<Add option="`wx-config --cflags`" />
 					<Add option="-s" />
 					<Add option="-fPIC" />
+					<Add directory="$(#cb_sdk)" />
 				</Compiler>
 				<Linker>
 					<Add option="`pkg-config --libs codeblocks`" />
 					<Add option="`wx-config --libs`" />
 				</Linker>
-   				<ExtraCommands>
+				<ExtraCommands>
 					<Add after="zip -j9 ~/.codeblocks/share/codeblocks/cbMakefileGen.zip manifest.xml" />
-		   			<Mode after="always" />
+					<Mode after="always" />
 				</ExtraCommands>
 			</Target>
 		</Build>
