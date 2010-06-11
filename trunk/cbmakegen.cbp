@@ -3,7 +3,6 @@
 	<FileVersion major="1" minor="6" />
 	<Project>
 		<Option title="cbmakegen" />
-		<Option platforms="Windows;Unix;" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
@@ -13,7 +12,7 @@
 				<Option deps_output="..\..\..\.deps\plugins\contrib\cbmakegen" />
 				<Option type="3" />
 				<Option compiler="gcc" />
-				<Option host_application="$(#cb)\devel\codeblocks.exe" />
+				<Option host_application="..\..\..\devel\codeblocks.exe" />
 				<Compiler>
 					<Add option="-pipe" />
 					<Add option="-mthreads" />
@@ -28,15 +27,19 @@
 					<Add option="-DWX_PRECOMP" />
 					<Add option="-DwxUSE_UNICODE" />
 					<Add option="-DcbDEBUG" />
-					<Add directory="$(#cb)\include" />
-					<Add directory="$(#cb)\include\wxscintilla\include" />
+					<Add option="-DwxPG_USE_WXMODULE=0" />
+					<Add option="-DWXMAKINGDLL_PROPGRID" />
+					<Add directory="..\..\..\include" />
+					<Add directory="..\..\..\sdk\wxscintilla\include" />
 					<Add directory="$(#wx.include)" />
 					<Add directory="$(#wx.lib)\gcc_dll\mswu" />
 				</Compiler>
 				<Linker>
+					<Add option="-Wl,--enable-auto-import" />
+					<Add option="-mthreads" />
 					<Add library="codeblocks" />
 					<Add library="wxmsw28u" />
-					<Add directory="$(#cb)\devel" />
+					<Add directory="..\..\..\devel" />
 					<Add directory="$(#wx.lib)\gcc_dll" />
 				</Linker>
 				<ExtraCommands>
@@ -50,7 +53,7 @@
 				<Option deps_output="..\..\..\.deps\plugins\contrib\cbmakegen" />
 				<Option type="3" />
 				<Option compiler="gcc" />
-				<Option host_application="$(#cb)\devel\codeblocks.exe" />
+				<Option host_application="..\..\..\devel\codeblocks.exe" />
 				<Compiler>
 					<Add option="-pipe" />
 					<Add option="-mthreads" />
@@ -65,15 +68,19 @@
 					<Add option="-DWX_PRECOMP" />
 					<Add option="-DwxUSE_UNICODE" />
 					<Add option="-DcbDEBUG" />
-					<Add directory="$(#cb)\include" />
-					<Add directory="$(#cb)\include\wxscintilla\include" />
+					<Add option="-DwxPG_USE_WXMODULE=0" />
+					<Add option="-DWXMAKINGDLL_PROPGRID" />
+					<Add directory="..\..\..\include" />
+					<Add directory="..\..\..\sdk\wxscintilla\include" />
 					<Add directory="$(#wx.include)" />
 					<Add directory="$(#wx.lib)\gcc_dll\mswu" />
 				</Compiler>
 				<Linker>
+					<Add option="-Wl,--enable-auto-import" />
+					<Add option="-mthreads" />
 					<Add library="codeblocks" />
 					<Add library="wxmsw28u" />
-					<Add directory="$(#cb)\devel" />
+					<Add directory="..\..\..\devel" />
 					<Add directory="$(#wx.lib)\gcc_dll" />
 				</Linker>
 				<ExtraCommands>
@@ -92,6 +99,7 @@
 		</Compiler>
 		<Linker>
 			<Add option="-s" />
+			<Add option="-mthreads" />
 		</Linker>
 		<Unit filename="Makefile.cpp">
 			<Option weight="30" />

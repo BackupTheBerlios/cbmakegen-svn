@@ -13,7 +13,7 @@
 WX_DEFINE_OBJARRAY( cbMGArrayOfRules );
 WX_DEFINE_OBJARRAY( cbMGSortFilesArray ); // keep our own copy, to sort it by file weight (priority)
 
-static wxString sHeader = _T( "# A simple makefile generator by KiSoft, 2008. mailto: kisoft@rambler.ru" );
+static wxString sHeader = _T( "# A simple makefile generator by KiSoft, 2010. mailto: kisoft@rambler.ru" );
 static wxString sHeaderVersion = _T( "# version: $MAJOR.$MINOR.$BUILD.$REVISION" );
 
 const wxString cmdbefore = _T( "commandsbeforebuild" );
@@ -378,7 +378,11 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
         {
             wxString l_LinkerCmd = l_pCompiler->GetCommand( ct );
 
+        #if wxCHECK_VERSION(2, 9, 0)
+            Manager::Get()->GetLogManager()->DebugLog(wxString::Format( _("LinkerCmd: %s"), l_LinkerCmd.wx_str()) );
+        #else
             Manager::Get()->GetLogManager()->DebugLog(wxString::Format( _("LinkerCmd: %s"), l_LinkerCmd.c_str()) );
+        #endif
             l_pCompiler->GenerateCommandLine( l_LinkerCmd,
                                               p_BuildTarget,
                                               NULL,
@@ -406,6 +410,11 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
 
     cbMGSortFilesArray files = GetProjectFilesSortedByWeight(p_BuildTarget,true,false);
     unsigned long lnb_files = files.GetCount();
+
+    // fix by Sasquatch_47
+    //need to clear the m_Objs string for cases where one is generating a makefile for more than one configuration
+    m_Objs.clear();
+
     for ( ii = 0; ii < lnb_files; ii++ )
     {
         l_Rule.Clear();
@@ -441,7 +450,11 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
             l_SourceFileMakefileFriendly = l_SourceFile;
             ConvertToMakefileFriendly( l_SourceFileMakefileFriendly );
             QuoteStringIfNeeded( l_SourceFile );
+        #if wxCHECK_VERSION(2, 9, 0)
+            Manager::Get()->GetLogManager()->DebugLog(wxString::Format( _("CompilerCmd: %s"), l_CompilerCmd.wx_str()) );
+        #else
             Manager::Get()->GetLogManager()->DebugLog(wxString::Format( _("CompilerCmd: %s"), l_CompilerCmd.c_str()) );
+        #endif
             /* FIXME: traps after next command */
             l_pCompiler->GenerateCommandLine( l_CompilerCmd,
                                               p_BuildTarget,

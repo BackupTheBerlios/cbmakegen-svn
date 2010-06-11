@@ -18,7 +18,7 @@
 					<Add option="`wx-config --cflags`" />
 					<Add option="-s" />
 					<Add option="-fPIC" />
-					<Add directory="$(#cb_sdk)" />
+					<Add directory="../../../" />
 				</Compiler>
 				<Linker>
 					<Add option="`pkg-config --libs codeblocks`" />
