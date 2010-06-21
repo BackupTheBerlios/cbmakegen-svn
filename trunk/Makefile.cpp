@@ -21,6 +21,24 @@ const wxString cmdafter  = _T( "commandsafterbuild" );
 const wxString cmdphony  = _T( ".PHONY" );
 const wxString cmdclean  = _T("clean");
 
+// #define USE_PRINTLOG 1
+// #define USE_DEBUGSAVE 1
+
+#ifdef USE_PRINTLOG
+const wxString g_FileName = _T( "F:/log.txt" );
+
+void printLog( const wxString &func, const wxString &str )
+{
+  wxTextFile l_File;
+  if( l_File.Open( g_FileName, wxConvFile ) )
+  {
+    l_File.AddLine( func + _T( ": " ) + str );
+    l_File.Write();
+    l_File.Close();
+  }
+}
+
+#endif
 
 void ConvertToMakefileFriendly(wxString& str)
 {
@@ -51,6 +69,27 @@ cbMGMakefile::cbMGMakefile( cbProject* ppProject, const wxString& pFileName, boo
 {
     //ctor
     m_Path = m_pProj->GetBasePath();
+
+    #ifdef USE_PRINTLOG
+    wxTextFile l_File( g_FileName );
+    if( l_File.Exists() )
+    {
+      if( l_File.Open() )
+      {
+        l_File.Clear();
+        l_File.Write();
+        l_File.Close();
+      }
+    }
+    else if( l_File.Create() )
+    {
+      l_File.AddLine( _T( "# Start log" ) );
+      l_File.Write();
+      l_File.Close();
+    }
+
+    printLog( _T( "cbMGMakeFile::cbMGMakeFile" ), m_Path );
+    #endif
 }
 
 cbMGMakefile::~cbMGMakefile()
@@ -96,6 +135,10 @@ cbMGSortFilesArray cbMGMakefile::GetProjectFilesSortedByWeight( ProjectBuildTarg
 
 bool cbMGMakefile::reLoadDependecies(const wxString &p_DepsFileName,ProjectBuildTarget *p_pTarget,Compiler* p_pCompiler)
 {
+    #ifdef USE_PRINTLOG
+    printLog( _T( "cbMGMakefile::reLoadDependecies, Start" ), p_pTarget->GetTitle() );
+    #endif
+
     m_Deps.Clear();
     if ( !wxFileExists( p_DepsFileName ) )
     {
@@ -103,12 +146,16 @@ bool cbMGMakefile::reLoadDependecies(const wxString &p_DepsFileName,ProjectBuild
                             "C::B MakefileGen could not complete the operation." );
         cbMessageBox( l_Msg, _( "Error" ), wxICON_ERROR | wxOK, (wxWindow *)Manager::Get()->GetAppWindow() );
         Manager::Get()->GetLogManager()->DebugLog( l_Msg );
+        #ifdef USE_PRINTLOG
+        printLog( _T( "cbMGMakefile::reLoadDependecies" ), _T( "End false" ) );
+        #endif
         return false;
     }
 
     wxString l_Buf;
     wxString l_VarName;
     wxTextFile l_DepFile;
+    wxString l_TargetName = p_pTarget->GetTitle();
     bool IsSkipThisFile = true;
     if (l_DepFile.Open( p_DepsFileName, wxConvFile ))
     {
@@ -151,20 +198,50 @@ bool cbMGMakefile::reLoadDependecies(const wxString &p_DepsFileName,ProjectBuild
                  * !!! .depend file content lowcase filenames
                  */
                 wxFileName l_DepFileName = l_VarName;
+
+                #ifdef USE_PRINTLOG
+                printLog( _T( "cbMGMakefile::reLoadDependecies, depfilename" ), l_VarName.wc_str() );
+                #endif
+
                 ProjectFile *pf = m_pProj->GetFileByFilename( l_DepFileName.GetFullPath(), l_DepFileName.IsRelative(), false );
                 if ( pf )
                 {
-                    const pfDetails& pfd = pf->GetFileDetails( p_pTarget );
-                    if ( p_pCompiler->GetSwitches().UseFullSourcePaths )
+                    #ifdef USE_PRINTLOG
+                    printLog( _T( "cbMGMakefile::reLoadDependecies, pf readed" ), pf->GetObjName() );
+                    #endif
+
+                    if( pf->buildTargets.Index( l_TargetName ) != wxNOT_FOUND )
                     {
-                        l_VarName = UnixFilename( pfd.source_file_absolute_native );
+
+                        #ifdef USE_PRINTLOG
+                        printLog( _T( "cbMGMakefile::reLoadDependecies, before pfd read, target" ), l_TargetName );
+                        #endif
+
+                        const pfDetails& pfd = pf->GetFileDetails( p_pTarget );
+
+                        #ifdef USE_PRINTLOG
+                        printLog( _T( "cbMGMakefile::reLoadDependecies, pfd readed" ), pfd.dep_dir );
+                        #endif
+
+                        if ( p_pCompiler->GetSwitches().UseFullSourcePaths )
+                        {
+                            l_VarName = UnixFilename( pfd.source_file_absolute_native );
+                        }
+                        else
+                        {
+                            l_VarName = pfd.source_file;
+                        }
+                        QuoteStringIfNeeded( l_VarName );
+                        IsSkipThisFile = false;
                     }
                     else
                     {
-                        l_VarName = pfd.source_file;
+                        #ifdef USE_PRINTLOG
+                        printLog( _T( "cbMGMakefile::reLoadDependecies, pf skip" ), pf->GetObjName() );
+                        #endif
+
+                        IsSkipThisFile = true;
                     }
-                    QuoteStringIfNeeded( l_VarName );
-                    IsSkipThisFile = false;
                 }
                 else
                 {
@@ -180,6 +257,9 @@ bool cbMGMakefile::reLoadDependecies(const wxString &p_DepsFileName,ProjectBuild
     l_DebFile.Write();
     l_DebFile.Close(); */
     /* return was absent here! */
+    #ifdef USE_PRINTLOG
+    printLog( _T( "cbMGMakefile::reLoadDependecies" ), _T( "End true" ) );
+    #endif
     return true;
 }
 
@@ -226,6 +306,7 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
     }
 
     wxString l_TargetName = p_BuildTarget->GetTitle();
+    l_TargetName.Replace( _T( " " ), _T( "_" ) );
 
     wxString l_ObjsName = _T("OBJS_") + l_TargetName.Upper();
     wxString l_CmdBefore = cmdbefore + _T('_') + l_TargetName;
@@ -262,6 +343,9 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
 
     wxString l_TargetFileName = p_BuildTarget->GetOutputFilename();
     Manager::Get()->GetMacrosManager()->ReplaceMacros(l_TargetFileName, p_BuildTarget);
+    #ifdef USE_PRINTLOG
+    printLog( _T( "cbMGMakefile::formFileForTarget" ), l_TargetFileName );
+    #endif
     wxFileName l_OutFileName = UnixFilename(l_TargetFileName);
     wxString l_OutFileNameFullPath = l_OutFileName.GetFullPath();
     QuoteStringIfNeeded( l_OutFileNameFullPath );
@@ -436,11 +520,25 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
             wxString l_SourceFileMakefileFriendly;
             if ( l_pCompiler->GetSwitches().UseFullSourcePaths )
             {
-                l_SourceFile = UnixFilename( pfd.source_file_absolute_native );
-                // for resource files, use short from if path because if windres bug with spaces-in-paths
-                if ( isResource )
+                wxString l_fName = pfd.source_file_absolute_native;
+                if( l_fName != wxEmptyString )
                 {
-                    l_SourceFile = pf->file.GetShortPath();
+
+                    #ifdef USE_DEBUGSAVE
+                    p_File.AddLine( _T("# File: ") + pfd.source_file_absolute_native );
+                    p_File.AddLine( _T("# File: ") + l_fName );
+                    p_File.AddLine( wxEmptyString );
+                    #endif
+
+                    #ifdef USE_PRINTLOG
+                    printLog( _T( "cbMGMakefile::formFileForTarget" ), l_fName );
+                    #endif
+                    l_SourceFile = UnixFilename( l_fName );
+                    // for resource files, use short from if path because if windres bug with spaces-in-paths
+                    if ( isResource )
+                    {
+                        l_SourceFile = pf->file.GetShortPath();
+                    }
                 }
             }
             else
@@ -513,6 +611,9 @@ bool cbMGMakefile::formFileForTarget( ProjectBuildTarget *p_BuildTarget, wxTextF
     return l_Ret;
 }
 
+/*
+ * Save result makefile
+ */
 bool cbMGMakefile::SaveMakefile()
 {
     bool l_Ret = false;
@@ -561,9 +662,27 @@ bool cbMGMakefile::SaveMakefile()
         return l_Ret;
     }
 
+    #ifdef USE_DEBUGSAVE
+    /* FIXME (shl#1#): forDebug only */
+    {
+        wxString lTmp;
+        lTmp = wxString::Format(_T("%d"),l_TargetsCount);
+        l_File.AddLine( _( "# Header wrote, target count = " ) + lTmp );
+        l_File.AddLine( wxEmptyString );
+        l_File.Write();
+    }
+    #endif
+
     m_DependenciesIsNotExistsIsNoProblem = false;
     if ( m_AllTargets )
     {
+        #ifdef USE_DEBUGSAVE
+        /* FIXME (shl#1#): forDebug only */
+        l_File.AddLine( _( "# All targets" ) );
+        l_File.AddLine( wxEmptyString );
+        l_File.Write();
+        #endif
+
         for ( long i = 0; i < l_TargetsCount; i++ )
         {
             ProjectBuildTarget *l_BuildTarget = m_pProj->GetBuildTarget( i );
@@ -575,6 +694,13 @@ bool cbMGMakefile::SaveMakefile()
                     m_ProceedTargets += _T(", ");
                 }
                 m_ProceedTargets += l_BuildTarget->GetTitle();
+
+                #ifdef USE_DEBUGSAVE
+                /* FIXME (shl#1#): forDebug only */
+                l_File.AddLine( _( "# " ) + l_BuildTarget->GetTitle() );
+                l_File.AddLine( wxEmptyString );
+                l_File.Write();
+                #endif
 
                 l_Ret = formFileForTarget( l_BuildTarget, l_File );
 
@@ -591,17 +717,119 @@ bool cbMGMakefile::SaveMakefile()
     }
     else
     {
-        ProjectBuildTarget *l_BuildTarget = m_pProj->GetBuildTarget( m_pProj->GetActiveBuildTarget() );
+        #ifdef USE_DEBUGSAVE
+        /* FIXME (shl#1#): forDebug only */
+        l_File.AddLine( _( "# One target" ) );
+        l_File.AddLine( wxEmptyString );
+        l_File.Write();
+        #endif
 
-        if ( l_BuildTarget )
+        /* FIXME (shl#1#): return NULL!!! Why?! */
+        wxString l_ActiveBuildTarget = m_pProj->GetActiveBuildTarget();
+
+        #ifdef USE_DEBUGSAVE
+        l_File.AddLine( _( "# Proj Title = " ) + m_pProj->GetTitle() );
+        l_File.AddLine( _( "# Active Build Target = " ) + l_ActiveBuildTarget );
+        l_File.AddLine( wxEmptyString );
+        l_File.Write();
+        #endif
+
+        if( m_pProj->HasVirtualBuildTarget( l_ActiveBuildTarget ) )
         {
-            m_ProceedTargets += l_BuildTarget->GetTitle();
+          #ifdef USE_DEBUGSAVE
+          /* Virtual target! Require to expand target list */
+          l_File.AddLine( _( "# Active Build Target isVirtual!" ) );
+          l_File.AddLine( wxEmptyString );
+          l_File.Write();
+          #endif
 
-            l_Ret = formFileForTarget( l_BuildTarget, l_File );
-            if ( l_Ret )
+          wxArrayString l_GroupTargets = m_pProj->GetExpandedVirtualBuildTargetGroup( l_ActiveBuildTarget );
+
+          #ifdef USE_DEBUGSAVE
+          l_File.AddLine( _( "# l_GroupTargets ready" ) );
+          l_File.AddLine( wxEmptyString );
+          l_File.Write();
+          #endif
+
+          wxArrayString::iterator l_ci = l_GroupTargets.begin();
+          wxArrayString::iterator l_end = l_GroupTargets.end();
+          for( ; l_ci != l_end; l_ci++ )
+          {
+
+
+            wxString l_TargetName = *l_ci;
+
+            #ifdef USE_DEBUGSAVE
+            l_File.AddLine( _( "# l_BuildTarget is " ) + ( l_TargetName ) );
+            l_File.AddLine( wxEmptyString );
+            l_File.Write();
+            #endif
+
+            ProjectBuildTarget *l_BuildTarget = m_pProj->GetBuildTarget( l_TargetName );
+
+            if ( l_BuildTarget )
             {
-                l_File.Write();
+                if( l_BuildTarget->SupportsCurrentPlatform() )
+                {
+                    m_ProceedTargets += l_BuildTarget->GetTitle();
+
+                    l_Ret = formFileForTarget( l_BuildTarget, l_File );
+                    if ( l_Ret )
+                    {
+                        l_File.Write();
+                    }
+                }
+                else
+                {
+                    #ifdef USE_DEBUGSAVE
+                    /* FIXME (shl#1#): forDebug only */
+                    l_File.AddLine( _( "# Not supported current platform" ) );
+                    l_File.AddLine( wxEmptyString );
+                    l_File.Write();
+                    #endif
+                }
             }
+            else
+            {
+                #ifdef USE_DEBUGSAVE
+                /* FIXME (shl#1#): forDebug only */
+                l_File.AddLine( _( "# l_BuildTarget is NULL" ) );
+                l_File.AddLine( wxEmptyString );
+                l_File.Write();
+                #endif
+            }
+          }
+        }
+        else
+        {
+          ProjectBuildTarget *l_BuildTarget = m_pProj->GetBuildTarget( l_ActiveBuildTarget );
+
+          if ( l_BuildTarget )
+          {
+              m_ProceedTargets += l_BuildTarget->GetTitle();
+
+              #ifdef USE_DEBUGSAVE
+              /* FIXME (shl#1#): forDebug only */
+              l_File.AddLine( _( "# " ) + l_BuildTarget->GetTitle() );
+              l_File.AddLine( wxEmptyString );
+              l_File.Write();
+              #endif
+
+              l_Ret = formFileForTarget( l_BuildTarget, l_File );
+              if ( l_Ret )
+              {
+                  l_File.Write();
+              }
+          }
+          else
+          {
+              #ifdef USE_DEBUGSAVE
+              /* FIXME (shl#1#): forDebug only */
+              l_File.AddLine( _( "# l_BuildTarget is NULL" ) );
+              l_File.AddLine( wxEmptyString );
+              l_File.Write();
+              #endif
+          }
         }
     }
     l_File.Close();
